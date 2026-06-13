@@ -6,7 +6,6 @@
     <title>Sistem Pencatatan Keuangan & Uang Makan</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Perbaikan manual kompabilitas tema pada Tailwind v4 CDN browser */
         :root, html { color-scheme: light; }
         html.dark { color-scheme: dark; }
     </style>
@@ -15,6 +14,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
         
+        <!-- HEADER UTAMA -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors duration-200">
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
@@ -23,7 +23,7 @@
                         🔄 Connecting...
                     </span>
                 </div>
-                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Input data dengan masking mata uang, pengelolaan nama, filter pencarian, dan sinkronisasi Firebase Cloud Realtime.</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Sistem Otomatisasi Absensi: Pemain yang terlewat tanggal otomatis dikenakan Guardian Rp 15.000.</p>
             </div>
             <button onclick="toggleDarkMode()" class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-xl border border-gray-300 dark:border-gray-600 cursor-pointer transition shrink-0">
                 <span id="themeIcon">🌙</span>
@@ -31,6 +31,7 @@
             </button>
         </div>
 
+        <!-- BACKUP & RESTORE -->
         <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors duration-200">
             <div class="flex items-center gap-3">
                 <span class="text-2xl">💾</span>
@@ -40,22 +41,23 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="exportSystemBackup()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-lg cursor-pointer transition shadow-sm">
+                <button id="btnBackup" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-lg cursor-pointer transition shadow-sm">
                     📥 Backup (.json)
                 </button>
                 <label class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded-lg cursor-pointer transition shadow-sm">
                     📤 Restore (.json)
-                    <input type="file" id="restoreFile" accept=".json" onchange="importSystemRestore(event)" class="hidden" />
+                    <input type="file" id="restoreFile" accept=".json" class="hidden" />
                 </label>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- FORMS & SETTINGS -->
             <div class="space-y-6">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-fit transition-colors duration-200">
                     <div class="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
                         <h2 id="formTitle" class="text-lg font-semibold text-gray-700 dark:text-gray-200">Input Data Baru</h2>
-                        <button id="cancelEditBtn" onclick="resetFormState()" class="hidden text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded cursor-pointer">Batal Edit</button>
+                        <button id="cancelEditBtn" class="hidden text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded cursor-pointer">Batal Edit</button>
                     </div>
                     
                     <form id="cegelForm" class="space-y-4">
@@ -122,23 +124,34 @@
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 border-b dark:border-gray-700 pb-1.5">Kelola Daftar Nama Dropdown</h3>
                     <div class="flex gap-2 mb-3">
                         <input type="text" id="inputNamaBaru" placeholder="Nama Baru..." class="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
-                        <button onclick="tambahNamaOpsi()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition">Tambah</button>
+                        <button id="btnTambahNama" class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition">Tambah</button>
                     </div>
-                    <div id="daftarNamaList" class="max-h-36 overflow-y-auto space-y-1 pr-1 text-xs">
-                        </div>
+                    <div id="daftarNamaList" class="max-h-36 overflow-y-auto space-y-1 pr-1 text-xs"></div>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 overflow-hidden h-fit flex flex-col space-y-4 transition-colors duration-200">
+            <!-- MAIN MONITORING VIEWS -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 overflow-hidden h-fit flex flex-col space-y-6 transition-colors duration-200">
                 
+                <!-- FILTER DATA TABEL -->
                 <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
                     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-1.5">
-                        <span>🔍</span> Fitur Pencarian & Filter Data
+                        <span>🔍</span> Fitur Pencarian & Filter Data Tabel
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Cari Berdasarkan Nama</label>
-                            <input type="text" id="searchNama" placeholder="Ketik nama..." class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filter Nama</label>
+                            <select id="filterNamaDropdown" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="">-- Semua Nama --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status Bayar</label>
+                            <select id="filterStatusDropdown" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="Belum Dibayar" selected>❌ Hanya Belum Bayar</option>
+                                <option value="Lunas">✅ Hanya Lunas</option>
+                                <option value="Semua">📋 Tampilkan Semua</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Dari Tanggal</label>
@@ -148,20 +161,20 @@
                             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sampai Tanggal</label>
                             <div class="flex gap-2">
                                 <input type="date" id="filterTanggalSelesai" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 flex-1">
-                                <button onclick="clearFilter()" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs px-2 rounded-lg cursor-pointer transition" title="Reset Filter">Reset</button>
+                                <button id="btnResetFilter" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs px-2 rounded-lg cursor-pointer transition" title="Reset Filter">Reset</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- TABEL TRANSAKSI TERKELOMPOK -->
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-700 pb-2">Riwayat Pencatatan</h2>
+                    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-700 pb-2">Riwayat Pencatatan (Dikelompokkan Per Nama)</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 dark:bg-gray-900/70 text-gray-600 dark:text-gray-400 uppercase text-xs tracking-wider border-b border-gray-200 dark:border-gray-700">
-                                    <th class="py-3 px-4">Tanggal</th>
-                                    <th class="py-3 px-4">Nama</th>
+                                <tr class="bg-gray-100 dark:bg-gray-900/90 text-gray-600 dark:text-gray-400 uppercase text-xs tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                    <th class="py-3 px-4">Tanggal Setor</th>
                                     <th class="py-3 px-4 text-right">Jumlah Cegel</th>
                                     <th class="py-3 px-4 text-right">Uang Makan</th>
                                     <th class="py-3 px-4 text-right">Guardian</th>
@@ -170,19 +183,41 @@
                                     <th class="py-3 px-4 text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="text-gray-700 dark:text-gray-300 text-sm divide-y divide-gray-100 dark:divide-gray-700">
-                                <tr id="emptyRow"><td colspan="8" class="text-center py-8 text-gray-400 italic">Membuka sambungan ke cloud server...</td></tr>
+                            <tbody id="tableBody" class="text-gray-700 dark:text-gray-300 text-sm">
+                                <tr id="emptyRow"><td colspan="7" class="text-center py-8 text-gray-400 italic">Membuka sambungan ke cloud server...</td></tr>
                             </tbody>
-                            <tfoot>
-                                <tr class="bg-blue-50 dark:bg-blue-950/40 font-semibold text-gray-800 dark:text-gray-200 border-t-2 border-blue-200 dark:border-blue-900">
-                                    <td class="py-3 px-4" colspan="2">TOTAL</td>
-                                    <td class="py-3 px-4 text-right text-blue-700 dark:text-blue-400 font-mono" id="totalCegel">Rp 0</td>
-                                    <td class="py-3 px-4 text-right text-green-700 dark:text-green-400 font-mono" id="totalUangMakan">Rp 0</td>
-                                    <td class="py-3 px-4 text-right text-purple-700 dark:text-purple-400 font-mono" id="totalGuardian">Rp 0</td>
-                                    <td class="py-3 px-4" colspan="3"></td>
-                                </tr>
-                            </tfoot>
                         </table>
+                    </div>
+                </div>
+
+                <!-- GRAND TOTAL DISPLAY CARDS -->
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">💰 Grand Total Berdasarkan Filter Terpilih</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Card Cegel -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100/60 dark:from-blue-950/20 dark:to-blue-900/10 p-4 rounded-xl border border-blue-200/60 dark:border-blue-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-blue-600 dark:text-blue-400">Total Setoran Cegel</p>
+                                <p id="totalCegel" class="text-xl font-bold font-mono text-blue-900 dark:text-blue-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-blue-500/10 p-2 rounded-lg text-blue-600">🔷</span>
+                        </div>
+                        <!-- Card Uang Makan -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/60 dark:from-emerald-950/20 dark:to-emerald-900/10 p-4 rounded-xl border border-emerald-200/60 dark:border-emerald-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total Uang Makan</p>
+                                <p id="totalUangMakan" class="text-xl font-bold font-mono text-emerald-900 dark:text-emerald-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-emerald-500/10 p-2 rounded-lg text-emerald-600">🍖</span>
+                        </div>
+                        <!-- Card Guardian -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100/60 dark:from-purple-950/20 dark:to-purple-900/10 p-4 rounded-xl border border-purple-200/60 dark:border-purple-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-purple-600 dark:text-purple-400">Total Guardian (Denda)</p>
+                                <p id="totalGuardian" class="text-xl font-bold font-mono text-purple-900 dark:text-purple-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-purple-500/10 p-2 rounded-lg text-purple-600">🛡️</span>
+                        </div>
                     </div>
                 </div>
 
@@ -191,11 +226,11 @@
 
     </div>
 
+    <!-- CODE SYSTEM & FIREBASE REALTIME MANAJEMEN TOTAL JADI SATU BUNDLE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Konfigurasi Firebase milik Anda
         const firebaseConfig = {
             apiKey: "AIzaSyAaYTmVx6phzoK8HNOSw9y3MAtkGe_pS5Y",
             authDomain: "perhitungan-basic-farmhouse.firebaseapp.com",
@@ -207,22 +242,35 @@
             measurementId: "G-2T9K8KTZ5X"
         };
 
-        // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // State Database Utama terikat lokal sementara sebelum sync render selesai
+        // --- STATE MANAJEMEN DATA ---
         let dataList = [];
         let listNamaMaster = ["Player 1", "Player 2", "Player 3"];
 
-        // Element DOM global binding
-        window.dataList = dataList;
-        window.listNamaMaster = listNamaMaster;
-
-        // Mendengarkan data perubahan secara Realtime dari Firebase
+        // --- DOM ELEMENT SELECTION ---
+        document.getElementById('tanggal').valueAsDate = new Date();
         const dbStatusLabel = document.getElementById('cloudStatus');
-        const rootDbRef = ref(db, "farmhouse_cloud_data");
+        const form = document.getElementById('cegelForm');
+        const namaDropdown = document.getElementById('namaDropdown');
+        const filterNamaDropdown = document.getElementById('filterNamaDropdown');
+        const filterStatusDropdown = document.getElementById('filterStatusDropdown');
+        const cegelMask = document.getElementById('cegelMask');
+        const guardianMask = document.getElementById('guardianMask');
+        const uangMakanDisplay = document.getElementById('uangMakanDisplay');
+        const uangMakanHidden = document.getElementById('uangMakanHidden');
+        const statusBayar = document.getElementById('statusBayar');
+        const submitBtn = document.getElementById('submitBtn');
+        const formTitle = document.getElementById('formTitle');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const inputNamaBaru = document.getElementById('inputNamaBaru');
+        const daftarNamaList = document.getElementById('daftarNamaList');
+        const filterTanggalMulai = document.getElementById('filterTanggalMulai');
+        const filterTanggalSelesai = document.getElementById('filterTanggalSelesai');
 
+        // --- LISTENER FIREBASE REALTIME ---
+        const rootDbRef = ref(db, "farmhouse_cloud_data");
         onValue(rootDbRef, (snapshot) => {
             const serverValue = snapshot.val();
             if (serverValue) {
@@ -233,95 +281,26 @@
                 listNamaMaster = ["Player 1", "Player 2", "Player 3"];
             }
 
-            // Expose kembali ke global browser scope
-            window.dataList = dataList;
-            window.listNamaMaster = listNamaMaster;
-
-            // Render komponen UI & Status Jumlah Data secara otomatis
             dbStatusLabel.textContent = `☁️ Connected (${dataList.length} Data)`;
             dbStatusLabel.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 whitespace-nowrap";
             
             renderDropdownNama();
             JalankanFilterDanRender();
         }, (error) => {
-            console.error("Firebase Read Error: ", error);
+            console.error(error);
             dbStatusLabel.textContent = "❌ Disconnected";
             dbStatusLabel.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 whitespace-nowrap";
         });
 
-        // --- ATURAN INTEGRASI ACTION DISPATCH FIREBASE CRUD ---
-        window.firebaseStoreRecord = function(dataObj, editId) {
-            const targetId = editId ? editId : dataObj.id;
-            set(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${targetId}`), dataObj)
-                .catch(err => alert("Gagal menyimpan data ke cloud server: " + err.message));
-        };
-
-        window.firebaseDeleteRecord = function(id) {
-            remove(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`))
-                .catch(err => alert("Gagal menghapus data dari cloud server: " + err.message));
-        };
-
-        window.firebaseToggleStatusRecord = function(id, statusBaru) {
-            update(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`), { statusBayar: statusBaru })
-                .catch(err => alert("Gagal memperbarui status ke cloud server: " + err.message));
-        };
-
-        window.firebaseSaveMasterNames = function(updatedNamesList) {
-            set(ref(db, `farmhouse_cloud_data/listNamaMaster`), updatedNamesList)
-                .catch(err => alert("Gagal menyimpan opsi nama ke cloud server: " + err.message));
-        };
-
-        window.firebaseBulkRestore = function(payloadBundle) {
-            set(ref(db, `farmhouse_cloud_data`), {
-                info: payloadBundle.info || "MSSTech Keuangan & Uang Makan Backup",
-                created_at: payloadBundle.created_at || new Date().toISOString(),
-                listNamaMaster: payloadBundle.listNamaMaster || ["Player 1", "Player 2", "Player 3"],
-                riwayatPencatatan: payloadBundle.riwayatPencatatan ? payloadBundle.riwayatPencatatan.reduce((acc, item) => {
-                    acc[item.id] = item;
-                    return acc;
-                }, {}) : {}
-            }).then(() => {
-                alert("✅ Cloud Server Database berhasil dipulihkan total!");
-            }).catch(err => alert("Gagal melakukan restore ke cloud server: " + err.message));
-        };
-    </script>
-
-    <script>
-        // Inisialisasi awal tanggal form harian
-        document.getElementById('tanggal').valueAsDate = new Date();
-
-        // Target DOM Elemen Form & Input
-        const form = document.getElementById('cegelForm');
-        const namaDropdown = document.getElementById('namaDropdown');
-        const cegelMask = document.getElementById('cegelMask');
-        const guardianMask = document.getElementById('guardianMask');
-        const uangMakanDisplay = document.getElementById('uangMakanDisplay');
-        const uangMakanHidden = document.getElementById('uangMakanHidden');
-        const statusBayar = document.getElementById('statusBayar');
-        const submitBtn = document.getElementById('submitBtn');
-        const formTitle = document.getElementById('formTitle');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-        
-        // Target DOM Kelola Nama
-        const inputNamaBaru = document.getElementById('inputNamaBaru');
-        const daftarNamaList = document.getElementById('daftarNamaList');
-
-        // Target DOM Elemen Pencarian & Filter
-        const searchNama = document.getElementById('searchNama');
-        const filterTanggalMulai = document.getElementById('filterTanggalMulai');
-        const filterTanggalSelesai = document.getElementById('filterTanggalSelesai');
-
-        // --- ENGINE MASKING & CURRENCY UNMASK ---
+        // --- FORMATTING FUNCTIONS ---
         function formatMaskingInput(valueString) {
             const clean = valueString.replace(/\D/g, ""); 
             if(!clean) return "";
             return new Intl.NumberFormat('id-ID').format(clean);
         }
-
         function unmaskNilai(valueString) {
             return parseInt(valueString.replace(/\./g, "")) || 0;
         }
-
         function formatRupiahTabel(angka) {
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
@@ -329,135 +308,330 @@
                 minimumFractionDigits: 0
             }).format(angka);
         }
+        function formatTanggalId(stringTanggal) {
+            if(!stringTanggal) return '-';
+            const opsi = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(stringTanggal + "T00:00:00").toLocaleDateString('id-ID', opsi);
+        }
 
-        // --- EVENT LISTENER MASKING ---
+        // --- MASKING LISTENERS ---
         cegelMask.addEventListener('input', function() {
             this.value = formatMaskingInput(this.value);
             const nilaiAsliCegel = unmaskNilai(this.value);
             const uangMakan = hitungUangMakan(nilaiAsliCegel);
-            
             uangMakanHidden.value = uangMakan;
             uangMakanDisplay.value = formatRupiahTabel(uangMakan);
         });
-
         guardianMask.addEventListener('input', function() {
             this.value = formatMaskingInput(this.value);
         });
 
-        // --- LOGIKA UTAMA HITUNG UANG MAKAN ---
         function hitungUangMakan(nilaiCegel) {
-            if (nilaiCegel >= 10000000) {
-                return 10000; 
-            } else if (nilaiCegel === 9000000) {
-                return 5000;  
-            } else {
-                return 0;     
-            }
+            if (nilaiCegel >= 10000000) return 10000; 
+            if (nilaiCegel === 9000000) return 5000;  
+            return 0;     
         }
 
-        // --- LOGIKA MANAJEMEN DROPDOWN NAMA ---
+        // --- RENDER DROPDOWN NAMA & AKSI TAMBAH/HAPUS DROPDOWN ---
         function renderDropdownNama() {
-            const currentList = window.listNamaMaster || ["Player 1", "Player 2", "Player 3"];
-            const selectedVal = namaDropdown.value;
+            const selectedValForm = namaDropdown.value;
+            const selectedValFilter = filterNamaDropdown.value;
+
             namaDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Nama --</option>';
+            filterNamaDropdown.innerHTML = '<option value="">-- Semua Nama --</option>';
             daftarNamaList.innerHTML = '';
 
-            [...currentList].sort().forEach(nama => {
-                const option = document.createElement('option');
-                option.value = nama;
-                option.textContent = nama;
-                namaDropdown.appendChild(option);
+            [...listNamaMaster].sort().forEach(nama => {
+                const optionForm = document.createElement('option');
+                optionForm.value = nama; optionForm.textContent = nama;
+                namaDropdown.appendChild(optionForm);
+
+                const optionFilter = document.createElement('option');
+                optionFilter.value = nama; optionFilter.textContent = nama;
+                filterNamaDropdown.appendChild(optionFilter);
 
                 const rowNama = document.createElement('div');
                 rowNama.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-2 border border-gray-200 dark:border-gray-600 rounded mb-1";
                 rowNama.innerHTML = `
                     <span class="font-medium text-gray-700 dark:text-gray-300">${nama}</span>
-                    <button type="button" onclick="hapusNamaOpsi('${nama}')" class="text-red-500 hover:text-red-700 font-semibold px-1 cursor-pointer">✕</button>
+                    <button type="button" data-nama="${nama}" class="btn-del-nama text-red-500 hover:text-red-700 font-semibold px-1 cursor-pointer">✕</button>
                 `;
                 daftarNamaList.appendChild(rowNama);
             });
 
-            if(currentList.includes(selectedVal)) {
-                namaDropdown.value = selectedVal;
-            }
+            if(listNamaMaster.includes(selectedValForm)) namaDropdown.value = selectedValForm;
+            if(listNamaMaster.includes(selectedValFilter)) filterNamaDropdown.value = selectedValFilter;
+
+            // Bind event listener untuk tombol hapus nama opsional
+            document.querySelectorAll('.btn-del-nama').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const nama = this.getAttribute('data-nama');
+                    if(confirm(`Hapus "${nama}" dari daftar dropdown pilihan?`)) {
+                        const updatedList = listNamaMaster.filter(n => n !== nama);
+                        set(ref(db, `farmhouse_cloud_data/listNamaMaster`), updatedList);
+                    }
+                });
+            });
         }
 
-        function tambahNamaOpsi() {
-            const currentList = window.listNamaMaster || [];
+        document.getElementById('btnTambahNama').addEventListener('click', function() {
             const namaBaru = inputNamaBaru.value.trim();
             if(!namaBaru) return alert("Masukkan nama yang valid!");
+            if(listNamaMaster.some(n => n.toLowerCase() === namaBaru.toLowerCase())) return alert("Nama ini sudah terdaftar!");
             
-            if(currentList.some(n => n.toLowerCase() === namaBaru.toLowerCase())) {
-                return alert("Nama ini sudah terdaftar di database!");
-            }
-
-            const updatedList = [...currentList, namaBaru];
+            const updatedList = [...listNamaMaster, namaBaru];
             inputNamaBaru.value = "";
-            
-            if(window.firebaseSaveMasterNames) {
-                window.firebaseSaveMasterNames(updatedList);
-            }
-        }
+            set(ref(db, `farmhouse_cloud_data/listNamaMaster`), updatedList);
+        });
 
-        function hapusNamaOpsi(nama) {
-            const currentList = window.listNamaMaster || [];
-            if(confirm(`Hapus "${nama}" dari daftar dropdown pilihan?`)) {
-                const updatedList = currentList.filter(n => n !== nama);
-                if(window.firebaseSaveMasterNames) {
-                    window.firebaseSaveMasterNames(updatedList);
-                }
-            }
-        }
-
-        // --- EVENT LISTENER UNTUK FILTER PENCARIAN ---
-        searchNama.addEventListener('input', JalankanFilterDanRender);
-        filterTanggalMulai.addEventListener('change', JalankanFilterDanRender);
-        filterTanggalSelesai.addEventListener('change', JalankanFilterDanRender);
-
-        function gantiStatusBayarTabel(id) {
-            const target = (window.dataList || []).find(item => item.id === id);
-            if(target) {
-                const statusBaru = (target.statusBayar === 'Lunas') ? 'Belum Dibayar' : 'Lunas';
-                if(window.firebaseToggleStatusRecord) {
-                    window.firebaseToggleStatusRecord(id, statusBaru);
-                }
-            }
-        }
-
+        // --- FILTER & ENGINE UTAMA RENDER TABEL ---
         function JalankanFilterDanRender() {
-            const currentData = window.dataList || [];
-            const keywordNama = searchNama.value.toLowerCase().trim();
+            let semuaTanggalUnik = [...new Set(dataList.map(item => item.tanggal))];
+            const hariIniStr = new Date().toISOString().slice(0, 10);
+            if (!semuaTanggalUnik.includes(hariIniStr)) semuaTanggalUnik.push(hariIniStr);
+            
+            let dataGabunganLengkap = [...dataList];
+
+            semuaTanggalUnik.forEach(tgl => {
+                listNamaMaster.forEach(nama => {
+                    const sudahAda = dataList.some(item => item.tanggal === tgl && item.nama === nama);
+                    if (!sudahAda) {
+                        dataGabunganLengkap.push({
+                            id: `AUTO-${tgl}|${nama}`, 
+                            tanggal: tgl, nama: nama, cegel: 0, uangMakan: 0, guardian: 15000,
+                            statusBayar: 'Belum Dibayar',
+                            keterangan: 'Otomatis: Tidak Setor (Guardian Rp 15.000)'
+                        });
+                    }
+                });
+            });
+
+            const filterNama = filterNamaDropdown.value;
+            const filterStatus = filterStatusDropdown.value;
             const tglMulai = filterTanggalMulai.value;
             const tglSelesai = filterTanggalSelesai.value;
 
-            const dataTerfilter = currentData.filter(item => {
-                const cocokNama = item.nama.toLowerCase().includes(keywordNama);
+            const dataTerfilter = dataGabunganLengkap.filter(item => {
+                const cocokNama = filterNama === "" || item.nama === filterNama;
+                let cocokStatus = true;
+                if (filterStatus !== "Semua") cocokStatus = (item.statusBayar || 'Belum Dibayar') === filterStatus;
                 let cocokTanggal = true;
                 if (tglMulai && item.tanggal < tglMulai) cocokTanggal = false;
                 if (tglSelesai && item.tanggal > tglSelesai) cocokTanggal = false;
-                return cocokNama && cocokTanggal;
+                return cocokNama && cocokStatus && cocokTanggal;
             });
 
-            renderTable(dataTerfilter);
+            renderGroupedTable(dataTerfilter);
             calculateTotal(dataTerfilter);
         }
 
-        function clearFilter() {
-            searchNama.value = "";
+        // Event filter listener
+        [filterNamaDropdown, filterStatusDropdown, filterTanggalMulai, filterTanggalSelesai].forEach(el => {
+            el.addEventListener('change', JalankanFilterDanRender);
+        });
+
+        document.getElementById('btnResetFilter').addEventListener('click', function() {
+            filterNamaDropdown.value = "";
+            filterStatusDropdown.value = "Belum Dibayar";
             filterTanggalMulai.value = "";
             filterTanggalSelesai.value = "";
             JalankanFilterDanRender();
+        });
+
+        // --- SKEMA WARNA HEADER TABEL KELOMPOK ---
+        function dapatkanWarnaBerdasarkanIndeksNama(namaStr) {
+            const koleksiWarnaLengkap = [
+                { light: "from-blue-600 to-indigo-600", dark: "dark:from-blue-950 dark:to-indigo-950" },
+                { light: "from-emerald-600 to-teal-600", dark: "dark:from-emerald-950 dark:to-teal-950" },
+                { light: "from-purple-600 to-fuchsia-600", dark: "dark:from-purple-950 dark:to-fuchsia-950" },
+                { light: "from-amber-600 to-orange-600", dark: "dark:from-amber-950 dark:to-orange-950" },
+                { light: "from-rose-600 to-pink-600", dark: "dark:from-rose-950 dark:to-pink-950" }
+            ];
+            const daftarNamaUrut = [...listNamaMaster].sort();
+            const indeksPosisi = daftarNamaUrut.indexOf(namaStr);
+            const indeksFinal = indeksPosisi !== -1 ? (indeksPosisi % koleksiWarnaLengkap.length) : 0;
+            return koleksiWarnaLengkap[indeksFinal];
         }
 
-        // --- CRUD TRANSAKSI TABLE DATA ---
+        function renderGroupedTable(arrayData = []) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (arrayData.length === 0) {
+                tbody.innerHTML = `<tr id="emptyRow"><td colspan="7" class="text-center py-8 text-gray-400 italic">Tidak ada data ditemukan.</td></tr>`;
+                return;
+            }
+
+            const petaKelompok = {};
+            arrayData.forEach(item => {
+                if (!petaKelompok[item.nama]) petaKelompok[item.nama] = [];
+                petaKelompok[item.nama].push(item);
+            });
+
+            Object.keys(petaKelompok).sort().forEach(namaPemain => {
+                const subRiwayat = petaKelompok[namaPemain].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)); 
+                let subCegel = 0, subMakan = 0, subGuardian = 0;
+
+                subRiwayat.forEach(s => {
+                    subCegel += s.cegel; subMakan += s.uangMakan; subGuardian += s.guardian;
+                });
+
+                const warnaSkema = dapatkanWarnaBerdasarkanIndeksNama(namaPemain);
+                const trHeader = document.createElement('tr');
+                trHeader.className = `bg-gradient-to-r ${warnaSkema.light} ${warnaSkema.dark} text-white font-bold border-t border-black/10 shadow-sm`;
+                trHeader.innerHTML = `
+                    <td colspan="7" class="py-3 px-4 text-base">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="flex items-center gap-2"><span>👤</span> ${namaPemain}</span>
+                            <span class="bg-white/20 text-white text-xs font-normal px-2.5 py-1 rounded-md border border-white/10">${subRiwayat.length} Baris</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(trHeader);
+
+                subRiwayat.forEach(item => {
+                    const trData = document.createElement('tr');
+                    const isAuto = typeof item.id === 'string' && item.id.startsWith('AUTO-');
+                    trData.className = isAuto 
+                        ? "bg-amber-500/[0.02] hover:bg-amber-500/[0.06] transition duration-150 border-b border-gray-100 dark:border-gray-700/50 italic text-gray-500"
+                        : "hover:bg-blue-50/40 dark:hover:bg-gray-700/30 transition duration-150 border-b border-gray-100 dark:border-gray-700/50";
+                    
+                    const statusStr = item.statusBayar || 'Belum Dibayar';
+                    const badgeStyle = statusStr === 'Lunas' 
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900' 
+                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-900';
+
+                    trData.innerHTML = `
+                        <td class="py-2.5 px-6 font-medium dark:text-gray-300">${formatTanggalId(item.tanggal)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-blue-600 dark:text-blue-400">${formatRupiahTabel(item.cegel)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-green-600 dark:text-green-400">${formatRupiahTabel(item.uangMakan)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-purple-600 dark:text-purple-400">${formatRupiahTabel(item.guardian)}</td>
+                        <td class="py-2.5 px-4 text-center">
+                            <button type="button" class="btn-toggle-status px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition ${badgeStyle}" data-id="${item.id}">
+                                ${statusStr === 'Lunas' ? '✅ Lunas' : '❌ Belum'}
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-4 text-xs max-w-[150px] truncate" title="${item.keterangan}">${item.keterangan}</td>
+                        <td class="py-2.5 px-4 text-center space-x-1 whitespace-nowrap">
+                            ${isAuto 
+                                ? `<button type="button" data-tgl="${item.tanggal}" data-nama="${item.nama}" data-id="${item.id}" class="btn-input-susulan text-amber-600 dark:text-amber-400 hover:bg-amber-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Input Setor</button>`
+                                : `<button type="button" data-id="${item.id}" class="btn-edit-data text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Edit</button>
+                                   <button type="button" data-id="${item.id}" class="btn-hapus-data text-red-600 dark:text-red-400 hover:bg-red-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Hapus</button>`
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(trData);
+                });
+
+                const trSubTotal = document.createElement('tr');
+                trSubTotal.className = "bg-slate-50 dark:bg-slate-900/60 border-b-2 border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400";
+                trSubTotal.innerHTML = `
+                    <td class="py-4 px-6 text-left text-gray-400 font-extrabold text-xs uppercase">SUB-TOTAL:</td>
+                    <td class="py-4 px-4 text-right"><span class="bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 px-3 py-1.5 rounded-lg font-mono border border-blue-200/50 shadow-sm">${formatRupiahTabel(subCegel)}</span></td>
+                    <td class="py-4 px-4 text-right"><span class="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-3 py-1.5 rounded-lg font-mono border border-emerald-200/50 shadow-sm">${formatRupiahTabel(subMakan)}</span></td>
+                    <td class="py-4 px-4 text-right"><span class="bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 px-3 py-1.5 rounded-lg font-mono border border-purple-200/50 shadow-sm">${formatRupiahTabel(subGuardian)}</span></td>
+                    <td colspan="3"></td>
+                `;
+                tbody.appendChild(trSubTotal);
+            });
+
+            // --- BINDING EVENT CLICKS DALAM LINGKUP SCRIPT MODULE (MENYEMBUHKAN TOMBOL KLIK) ---
+            document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    
+                    // JIKA DATA OTOMATIS DIKLIK TOMBOL STATUSNYA
+                    if (id.startsWith('AUTO-')) {
+                        const parts = id.split('|');
+                        const tgl = parts[0].replace('AUTO-', '');
+                        const nama = parts[1];
+                        
+                        const dataBaruSuntik = {
+                            id: Date.now(),
+                            tanggal: tgl, nama: nama, cegel: 0, uangMakan: 0, guardian: 15000,
+                            statusBayar: 'Lunas',
+                            keterangan: 'Otomatis: Tidak Setor (Guardian Rp 15.000)'
+                        };
+                        set(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${dataBaruSuntik.id}`), dataBaruSuntik);
+                    } else {
+                        // JIKA DATA ASLI/MANUAL DIKLIK
+                        const target = dataList.find(item => item.id == id);
+                        if(target) {
+                            const statusBaru = (target.statusBayar === 'Lunas') ? 'Belum Dibayar' : 'Lunas';
+                            update(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`), { statusBayar: statusBaru });
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-edit-data').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const target = dataList.find(item => item.id == id);
+                    if(!target) return;
+
+                    document.getElementById('editId').value = target.id;
+                    document.getElementById('tanggal').value = target.tanggal;
+                    namaDropdown.value = target.nama;
+                    cegelMask.value = formatMaskingInput(target.cegel.toString());
+                    guardianMask.value = formatMaskingInput(target.guardian.toString());
+                    uangMakanHidden.value = target.uangMakan;
+                    uangMakanDisplay.value = formatRupiahTabel(target.uangMakan);
+                    statusBayar.value = target.statusBayar || 'Belum Dibayar';
+                    document.getElementById('keterangan').value = target.keterangan;
+
+                    formTitle.textContent = "Edit Data Terpilih";
+                    submitBtn.textContent = "Simpan Perubahan";
+                    submitBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg cursor-pointer transition";
+                    cancelEditBtn.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.btn-input-susulan').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    resetFormState();
+                    document.getElementById('editId').value = this.getAttribute('data-id');
+                    document.getElementById('tanggal').value = this.getAttribute('data-tgl');
+                    namaDropdown.value = this.getAttribute('data-nama');
+                    
+                    formTitle.textContent = "Input Setoran Susulan";
+                    submitBtn.textContent = "Simpan Setoran";
+                    cancelEditBtn.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.btn-hapus-data').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if(confirm("Yakin ingin menghapus baris data pencatatan ini?")) {
+                        remove(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`));
+                        if(document.getElementById('editId').value == id) resetFormState();
+                    }
+                });
+            });
+        }
+
+        function calculateTotal(arrayData = []) {
+            let tc = 0, tum = 0, tg = 0;
+            arrayData.forEach(item => {
+                tc += item.cegel; tum += item.uangMakan; tg += item.guardian;
+            });
+            document.getElementById('totalCegel').textContent = formatRupiahTabel(tc);
+            document.getElementById('totalUangMakan').textContent = formatRupiahTabel(tum);
+            document.getElementById('totalGuardian').textContent = formatRupiahTabel(tg);
+        }
+
+        // --- MANAJEMEN FORM INPUT ACTION ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
             const editId = document.getElementById('editId').value;
             const nilaiAsliCegel = unmaskNilai(cegelMask.value);
 
+            const isAuto = typeof editId === 'string' && editId.startsWith('AUTO-');
+            const finalId = (editId && !isAuto) ? parseInt(editId) : Date.now();
+
             const dataObj = {
-                id: editId ? parseInt(editId) : Date.now(),
+                id: finalId,
                 tanggal: document.getElementById('tanggal').value,
                 nama: namaDropdown.value,
                 cegel: nilaiAsliCegel,
@@ -467,104 +641,67 @@
                 keterangan: document.getElementById('keterangan').value || '-'
             };
 
-            if(window.firebaseStoreRecord) {
-                window.firebaseStoreRecord(dataObj, editId ? parseInt(editId) : null);
-            }
-
-            resetFormState();
+            set(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${finalId}`), dataObj)
+                .then(() => resetFormState())
+                .catch(err => alert(err.message));
         });
 
-        function renderTable(arrayData = window.dataList || []) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        function resetFormState() {
+            form.reset();
+            document.getElementById('editId').value = "";
+            document.getElementById('tanggal').valueAsDate = new Date();
+            cegelMask.value = ""; guardianMask.value = "";
+            uangMakanDisplay.value = "Rp 0"; uangMakanHidden.value = "0";
+            statusBayar.value = "Belum Dibayar";
+            formTitle.textContent = "Input Data Baru";
+            submitBtn.textContent = "Tambahkan Data";
+            submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg cursor-pointer transition";
+            cancelEditBtn.classList.add('hidden');
+        }
+        cancelEditBtn.addEventListener('click', resetFormState);
 
-            if(arrayData.length === 0) {
-                tbody.innerHTML = `<tr id="emptyRow"><td colspan="8" class="text-center py-8 text-gray-400 italic">Belum ada data tersedia.</td></tr>`;
-                return;
+        // --- BACKUP & RESTORE UTILITY INSIDE MODULE ---
+        document.getElementById('btnBackup').addEventListener('click', function() {
+            if (dataList.length === 0) return alert("Tidak ada transaksi untuk dicadangkan.");
+            const payload = {
+                info: "MSSTech Keuangan & Uang Makan Backup",
+                created_at: new Date().toISOString(),
+                listNamaMaster: listNamaMaster,
+                riwayatPencatatan: dataList
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`);
+            dl.click();
+        });
+
+        document.getElementById('restoreFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!confirm("⚠️ PERINGATAN:\nRestore akan menghapus seluruh data yang aktif di Cloud server saat ini.\n\nYakin?")) {
+                event.target.value = ''; return;
             }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    let arr = Array.isArray(parsed.riwayatPencatatan) ? parsed.riwayatPencatatan : Object.values(parsed.riwayatPencatatan || {});
+                    set(ref(db, `farmhouse_cloud_data`), {
+                        info: parsed.info || "MSSTech Backup",
+                        created_at: new Date().toISOString(),
+                        listNamaMaster: parsed.listNamaMaster || ["Player 1", "Player 2", "Player 3"],
+                        riwayatPencatatan: arr.reduce((acc, item) => { acc[item.id] = item; return acc; }, {})
+                    }).then(() => alert("✅ Cloud server berhasil dipulihkan total!"));
+                } catch (err) { alert("Format file rusak atau salah."); }
+                finally { event.target.value = ''; }
+            };
+            reader.readAsText(file);
+        });
+    </script>
 
-            arrayData.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700/40 transition duration-150";
-                
-                const statusStr = item.statusBayar || 'Belum Dibayar';
-                const badgeStyle = statusStr === 'Lunas' 
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900' 
-                    : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-900';
-
-                tr.innerHTML = `
-                    <td class="py-3 px-4">${formatTanggalId(item.tanggal)}</td>
-                    <td class="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">${item.nama}</td>
-                    <td class="py-3 px-4 text-right font-mono text-blue-600 dark:text-blue-400">${formatRupiahTabel(item.cegel)}</td>
-                    <td class="py-3 px-4 text-right font-mono text-green-600 dark:text-green-400">${formatRupiahTabel(item.uangMakan)}</td>
-                    <td class="py-3 px-4 text-right font-mono text-purple-600 dark:text-purple-400">${formatRupiahTabel(item.guardian)}</td>
-                    <td class="py-3 px-4 text-center">
-                        <button type="button" onclick="gantiStatusBayarTabel(${item.id})" title="Klik untuk mengubah status" class="px-2.5 py-1 text-xs font-semibold rounded-full cursor-pointer transition ${badgeStyle}">
-                            ${statusStr === 'Lunas' ? '✅ Lunas' : '❌ Belum'}
-                        </button>
-                    </td>
-                    <td class="py-3 px-4 text-gray-500 dark:text-gray-400 text-xs max-w-[150px] truncate" title="${item.keterangan}">${item.keterangan}</td>
-                    <td class="py-3 px-4 text-center space-x-1 whitespace-nowrap">
-                        <button type="button" onclick="editData(${item.id})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 px-2 py-1 rounded text-xs font-medium cursor-pointer transition">Edit</button>
-                        <button type="button" onclick="hapusData(${item.id})" class="text-red-600 dark:text-red-400 hover:text-red-900 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 px-2 py-1 rounded text-xs font-medium cursor-pointer transition">Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function calculateTotal(arrayData = window.dataList || []) {
-            let totalCegel = 0;
-            let totalUangMakan = 0;
-            let totalGuardian = 0;
-
-            arrayData.forEach(item => {
-                totalCegel += item.cegel;
-                totalUangMakan += item.uangMakan;
-                totalGuardian += item.guardian;
-            });
-
-            document.getElementById('totalCegel').textContent = formatRupiahTabel(totalCegel);
-            document.getElementById('totalUangMakan').textContent = formatRupiahTabel(totalUangMakan);
-            document.getElementById('totalGuardian').textContent = formatRupiahTabel(totalGuardian);
-        }
-
-        function editData(id) {
-            const currentData = window.dataList || [];
-            const target = currentData.find(item => item.id === id);
-            if(!target) return;
-
-            document.getElementById('editId').value = target.id;
-            document.getElementById('tanggal').value = target.tanggal;
-            
-            namaDropdown.value = target.nama;
-
-            cegelMask.value = formatMaskingInput(target.cegel.toString());
-            guardianMask.value = formatMaskingInput(target.guardian.toString());
-
-            uangMakanHidden.value = target.uangMakan;
-            uangMakanDisplay.value = formatRupiahTabel(target.uangMakan);
-            
-            statusBayar.value = target.statusBayar || 'Belum Dibayar';
-            document.getElementById('keterangan').value = target.keterangan;
-
-            formTitle.textContent = "Edit Data Terpilih";
-            submitBtn.textContent = "Simpan Perubahan";
-            submitBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 shadow-sm cursor-pointer";
-            cancelEditBtn.classList.remove('hidden');
-        }
-
-        function hapusData(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus baris data pencatatan ini?")) {
-                if(window.firebaseDeleteRecord) {
-                    window.firebaseDeleteRecord(id);
-                }
-                const currentEditId = document.getElementById('editId').value;
-                if(currentEditId == id) resetFormState();
-            }
-        }
-
-        // --- ENGINE MANAGEMENT DARK MODE ---
+    <!-- THEME MANAGEMENT (Sederhana diluar Module agar instan load) -->
+    <script>
         function toggleDarkMode() {
             const html = document.documentElement;
             const themeIcon = document.getElementById('themeIcon');
@@ -572,134 +709,23 @@
 
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
-                themeIcon.textContent = "🌙";
-                themeText.textContent = "Dark Mode";
+                themeIcon.textContent = "🌙"; themeText.textContent = "Dark Mode";
                 localStorage.setItem('theme', 'light');
             } else {
                 html.classList.add('dark');
-                themeIcon.textContent = "☀️";
-                themeText.textContent = "Light Mode";
+                themeIcon.textContent = "☀️"; themeText.textContent = "Light Mode";
                 localStorage.setItem('theme', 'dark');
             }
         }
-
         (function initTheme() {
             const savedTheme = localStorage.getItem('theme');
             const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            const themeText = document.getElementById('themeText');
-
             if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 html.classList.add('dark');
-                themeIcon.textContent = "☀️";
-                themeText.textContent = "Light Mode";
-            } else {
-                html.classList.remove('dark');
-                themeIcon.textContent = "🌙";
-                themeText.textContent = "Dark Mode";
+                document.getElementById('themeIcon').textContent = "☀️";
+                document.getElementById('themeText').textContent = "Light Mode";
             }
         })();
-
-        function resetFormState() {
-            form.reset();
-            document.getElementById('editId').value = "";
-            document.getElementById('tanggal').valueAsDate = new Date();
-            
-            cegelMask.value = "";
-            guardianMask.value = "";
-            uangMakanDisplay.value = "Rp 0";
-            uangMakanHidden.value = "0";
-            statusBayar.value = "Belum Dibayar";
-
-            formTitle.textContent = "Input Data Baru";
-            submitBtn.textContent = "Tambahkan Data";
-            submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 shadow-sm cursor-pointer";
-            cancelEditBtn.classList.add('hidden');
-        }
-
-        function formatTanggalId(stringTanggal) {
-            if(!stringTanggal) return '-';
-            const opsi = { day: 'numeric', month: 'short', year: 'numeric' };
-            return new Date(stringTanggal + "T00:00:00").toLocaleDateString('id-ID', opsi);
-        }
-
-        // --- MODUL EXPORT & IMPORT JSON LINKED TO CLOUD ---
-        function exportSystemBackup() {
-            try {
-                const currentData = window.dataList || [];
-                const currentNames = window.listNamaMaster || [];
-                if (currentData.length === 0) {
-                    alert("Tidak ada transaksi dalam riwayat tabel untuk dicadangkan.");
-                    return;
-                }
-
-                const backupPayload = {
-                    info: "MSSTech Keuangan & Uang Makan Backup",
-                    created_at: new Date().toISOString(),
-                    listNamaMaster: currentNames,
-                    riwayatPencatatan: currentData
-                };
-
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupPayload, null, 2));
-                const tanggalStamp = new Date().toISOString().slice(0, 10);
-                
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `backup_keuangan_${tanggalStamp}.json`);
-                document.body.appendChild(downloadAnchor);
-                
-                downloadAnchor.click();
-                downloadAnchor.remove();
-                
-            } catch (err) {
-                console.error(err);
-                alert("Gagal melakukan pengeksporan file backup.");
-            }
-        }
-
-        function importSystemRestore(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const konfirmasi = confirm("⚠️ PERINGATAN:\nMelakukan proses restore akan menimpa dan menghapus seluruh data yang aktif di Cloud Server Firebase saat ini.\n\nApakah Anda yakin?");
-            if (!konfirmasi) {
-                event.target.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsedJson = JSON.parse(e.target.result);
-                    if (parsedJson && (Array.isArray(parsedJson.riwayatPencatatan) || typeof parsedJson.riwayatPencatatan === 'object')) {
-                        
-                        let recordsArray = [];
-                        if (Array.isArray(parsedJson.riwayatPencatatan)) {
-                            recordsArray = parsedJson.riwayatPencatatan;
-                        } else {
-                            recordsArray = Object.values(parsedJson.riwayatPencatatan);
-                        }
-
-                        if(window.firebaseBulkRestore) {
-                            window.firebaseBulkRestore({
-                                info: parsedJson.info,
-                                created_at: parsedJson.created_at,
-                                listNamaMaster: parsedJson.listNamaMaster || [],
-                                riwayatPencatatan: recordsArray
-                            });
-                        }
-                    } else {
-                        alert("❌ File ditolak. Struktur data di dalam file backup tidak dikenali.");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert("❌ Gagal membaca file backup. Format file corrupt atau bukan berkas JSON.");
-                } finally {
-                    event.target.value = '';
-                }
-            };
-            reader.readAsText(file);
-        }
     </script>
 </body>
 </html>
