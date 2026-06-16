@@ -2,711 +2,730 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GG FARMHOUSE - Official Sync v22.8</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pencatatan Keuangan & Uang Makan</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        :root { --primary: #27ae60; --bg: #f8f9fa; --card: #ffffff; --text: #333; --border: #ddd; --zebra: #f2f2f2; }
-        body.dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; --zebra: #252525; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px; background: var(--bg); color: var(--text); transition: 0.3s; padding-bottom: 40px; }
-        .container { max-width: 1600px; margin: auto; }
-        
-        /* HEADER PREMIUM RE-DESIGN (RESPONSIF MOBILE-FIRST) */
-        .header-app { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: var(--card); 
-            padding: 15px 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-            margin-bottom: 20px; 
-            gap: 20px; 
-        }
-        .header-brand-wrapper { 
-            display: flex; 
-            align-items: center; 
-            gap: 20px; 
-        }
-        .app-logo-hardcoded { 
-            width: 85px; 
-            height: 85px; 
-            flex-shrink: 0; 
-        }
-        .brand-text-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .header-buttons { 
-            display: flex; 
-            gap: 8px; 
-            flex-wrap: wrap; 
-            justify-content: flex-end; 
-        }
-        .sync-info { 
-            font-size: 0.8em; 
-            color: white; 
-            background: #2c3e50; 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            display: inline-block; 
-            font-weight: bold; 
-            width: fit-content;
-        }
-        
-        /* Stats Grid - Layout Memanjang Vertikal Sejajar Kanan */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stats-left-col { display: flex; flex-direction: column; }
-        .stats-right-col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        .stat-card { padding: 20px; border-radius: 12px; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .stat-card .label { font-size: 0.75em; text-transform: uppercase; opacity: 0.9; margin-bottom: 5px; display: block; }
-        .stat-card .value { font-size: 1.4em; }
-
-        /* Input & Filter Section */
-        .input-section { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; border-top: 6px solid var(--primary); }
-        .filter-container { background: var(--card); padding: 15px 20px; border-radius: 12px 12px 0 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; border-bottom: 1px solid var(--border); }
-        .filter-group { flex: 1; min-width: 140px; }
-        .input-group label, .filter-group label { font-size: 0.7em; font-weight: bold; margin-bottom: 5px; color: var(--primary); text-transform: uppercase; display: block; }
-        
-        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text); outline: none; width: 100%; box-sizing: border-box; height: 42px; font-size: 14px; }
-        body.dark-mode select option { background: #1e1e1e; color: #e0e0e0; }
-        
-        /* Table Style */
-        .table-container { overflow-x: auto; background: var(--card); border-radius: 0 0 12px 12px; margin-bottom: 20px; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; font-size: 0.85em; }
-        th, td { border: 1px solid var(--border); padding: 10px 6px; text-align: center; }
-        th { background: #f2f2f2; color: #333; font-weight: bold; font-size: 0.75em; text-transform: uppercase; }
-        tbody tr:nth-child(even) { background-color: var(--zebra); }
-        tfoot tr { background: #2c3e50; color: white; font-weight: bold; }
-        .td-edit input, .td-edit select { border: none; background: transparent; text-align: center; color: inherit; font-size: 1.05em; width: 100%; height: 100%; padding: 0; }
-        .td-edit input:focus { background: #ffffff !important; color: #000 !important; outline: 2px solid var(--primary); border-radius: 4px; }
-        
-        .bg-earning { background: #27ae60 !important; color: white !important; }
-        .txt-transfer { color: #e67e22 !important; font-weight: 900; } 
-        .txt-tomy { color: #3498db !important; font-weight: 900; }
-        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .dot-green { background-color: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
-        .dot-red { background-color: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
-        
-        /* Modals */
-        .modal { display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
-        .modal-content { background: var(--card); margin: 1% auto; padding: 25px; border-radius: 15px; width: 95%; max-width: 1550px; color: var(--text); max-height: 96vh; overflow-y: auto; box-sizing: border-box; }
-        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; justify-content:center; align-items:center; z-index:9999; padding: 20px; box-sizing: border-box; }
-        button { cursor: pointer; border-radius: 8px; font-weight: bold; border: none; padding: 10px 15px; font-size: 13px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; }
-        
-        .vcard-scroll { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 12px; -webkit-overflow-scrolling: touch; }
-        .vcard-user { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 12px; border-radius: 12px; min-width: 160px; border-left: 5px solid #e74c3c; flex-shrink: 0; }
-        .vcard-user .amt { color: #ffff00; font-weight: 800; font-size: 1.1em; }
-
-        .cal-grid { display: grid; grid-template-columns: repeat(31, 1fr); gap: 2px; margin-top: 5px; width: 100%; overflow-x: auto; }
-        .cal-day { font-size: 9px; padding: 4px 0; border-radius: 3px; color: white; text-align: center; font-weight: bold; min-width: 15px; }
-        .day-active { background: #27ae60; }
-        .day-missing { background: #e74c3c; opacity: 0.3; }
-
-        .cal-target-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; background: var(--border); padding: 10px; border-radius: 8px; }
-        .cal-target-day { background: var(--card); min-height: 90px; padding: 10px; border-radius: 5px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; }
-        .cal-target-date { font-weight: bold; font-size: 1.1em; color: var(--text); }
-        .total-info { font-size: 0.85em; margin-top: 5px; }
-        .status-lunas { color: #27ae60; font-weight: bold; font-size: 0.8em; margin-top: 4px; }
-        .status-minus { color: #e74c3c; font-weight: bold; font-size: 0.8em; margin-top: 4px; }
-        .day-header { text-align: center; font-weight: bold; padding: 10px; color: var(--primary); font-size: 0.9em; background: var(--card); border-radius: 5px; }
-        
-        .load-more-btn { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: var(--primary); font-weight: bold; margin-bottom: 20px; transition: 0.3s; border-radius: 0 0 12px 12px; }
-        .load-more-btn:hover { background: var(--primary); color: white; }
-
-        .visual-kasbon-container { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; padding-right: 5px; margin-top: 5px; }
-        .visual-kasbon-item { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(44, 62, 80, 0.6), rgba(52, 73, 94, 0.6)); border-left: 5px solid #ff4d4d; padding: 11px 14px; border-radius: 8px; box-shadow: inset 0 1px 3px rgba(255,255,255,0.05); }
-        .visual-kasbon-name { font-size: 1.05em; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
-        .visual-kasbon-amt { font-size: 1.15em; font-weight: 900; color: #ffff00; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
-
-        /* RESPONSIVE HEADERS BREAKPOINT UNTUK MOBILE */
-        @media (max-width: 768px) {
-            body { margin: 10px; font-size: 14px; }
-            
-            /* Header diubah menjadi susunan vertikal rapi di mobile */
-            .header-app { 
-                flex-direction: column; 
-                align-items: center; 
-                text-align: center; 
-                padding: 15px; 
-                gap: 15px;
-            }
-            .header-brand-wrapper { 
-                flex-direction: column; 
-                gap: 8px; 
-            }
-            /* Ukuran Logo dioptimalkan agar tidak memakan layar */
-            .app-logo-hardcoded { 
-                width: 70px; 
-                height: 70px; 
-            }
-            .brand-text-container h2 {
-                font-size: 1.4em !important;
-                letter-spacing: 1px;
-            }
-            .sync-info {
-                align-self: center;
-                font-size: 0.75em;
-                padding: 4px 12px;
-            }
-
-            /* Tombol Menu diubah menjadi Grid 3 Kolom Simetris & Presisi */
-            .header-buttons { 
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px; 
-                width: 100%;
-            }
-            .header-buttons button { 
-                width: 100%;
-                font-size: 11px; 
-                padding: 6px 4px; 
-                min-height: 42px; /* Nyaman disentuh jari */
-                border-radius: 6px;
-            }
-            
-            /* Stats layout kembali normal di mobile agar tidak sempit */
-            .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-            .stats-right-col { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stat-card .value { font-size: 1.1em; }
-
-            .input-section { grid-template-columns: repeat(2, 1fr); padding: 15px; gap: 10px; }
-            .input-section .input-group[style*="grid-column: span 2"] { grid-column: span 2 !important; }
-            .input-section button { grid-column: span 2; margin-top: 5px; }
-
-            .filter-container { padding: 15px; flex-direction: column; align-items: stretch; gap: 10px; }
-            .filter-group { width: 100%; }
-            .filter-container button { width: 100%; margin-left: 0 !important; }
-
-            .modal-content { width: 96%; padding: 15px; margin: 4% auto; }
-            #targetCalendarOutput { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .cal-target-grid { min-width: 600px; }
-            .cal-target-day { min-height: 75px; padding: 6px; }
-            
-            .table-container { position: relative; border: 1px solid var(--border); }
-            .table-container::after { content: "↔ Scroll ke Samping"; display: block; text-align: right; font-size: 10px; color: #888; padding: 4px 10px; background: var(--card); border-top: 1px solid var(--border); }
-        }
+        :root, html { color-scheme: light; }
+        html.dark { color-scheme: dark; }
     </style>
 </head>
-<body class="dark-mode">
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 min-h-screen p-4 md:p-8 transition-colors duration-200">
 
-<div id="loginOverlay">
-    <div style="background: white; padding: 30px 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 320px; box-sizing: border-box;">
-        <h2 style="color:#333; margin:0 0 20px 0; font-size: 1.5em;">🔐 GG FARMHOUSE LOGIN</h2>
-        <input type="password" id="pinInput" style="text-align:center; font-size:2em; border: 2px solid #ddd; width: 100%;">
-        <button style="background:#27ae60; color:white; width:100%; padding:15px; margin-top:20px" onclick="checkPin()">MASUK</button>
-    </div>
-</div>
-
-<div class="container">
-    <!-- HEADER SECTION -->
-    <div class="header-app">
-        <div class="header-brand-wrapper">
-            <!-- EMBEDDED LOGO SVG -->
-            <div class="app-logo-hardcoded">
-                <svg viewBox="0 0 800 800" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
-                            <stop offset="70%" stop-color="#0a122c"/>
-                            <stop offset="100%" stop-color="#050814"/>
-                        </radialGradient>
-                        <linearGradient id="cyber-blue" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#00f0ff"/>
-                            <stop offset="100%" stop-color="#0044ff"/>
-                        </linearGradient>
-                        <linearGradient id="cyber-green" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#39ff14"/>
-                            <stop offset="100%" stop-color="#00aa50"/>
-                        </linearGradient>
-                        <linearGradient id="text-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#ffffff"/>
-                            <stop offset="70%" stop-color="#d0f0ff"/>
-                            <stop offset="100%" stop-color="#70a0d0"/>
-                        </linearGradient>
-                        <filter id="glow-heavy" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="8" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
-                        <filter id="glow-subtle" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="3" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
-                    </defs>
-                    <circle cx="400" cy="400" r="380" fill="url(#bg-glow)" stroke="#003366" stroke-width="12"/>
-                    <circle cx="400" cy="400" r="365" fill="none" stroke="url(#cyber-blue)" stroke-width="6" opacity="0.8" filter="url(#glow-subtle)"/>
-                    <circle cx="400" cy="400" r="350" fill="none" stroke="#0d1b3e" stroke-width="4"/>
-                    <g stroke="#102a57" stroke-width="3" fill="none" opacity="0.6">
-                        <path d="M 120 400 L 200 400 M 150 350 L 180 380 M 150 450 L 180 420" />
-                        <path d="M 680 400 L 600 400 M 650 350 L 620 380 M 650 450 L 620 420" />
-                        <path d="M 400 120 L 400 180 M 350 150 L 380 170 M 450 150 L 420 170" />
-                    </g>
-                    <path d="M 220 240 Q 400 200 580 240 L 550 500 Q 400 620 250 500 Z" fill="#060d22" stroke="url(#cyber-green)" stroke-width="5" filter="url(#glow-subtle)"/>
-                    <path d="M 235 255 Q 400 218 565 255 L 538 490 Q 400 598 262 490 Z" fill="none" stroke="#12403f" stroke-width="2"/>
-                    <path d="M 350 200 L 330 150 L 370 165 L 400 130 L 430 165 L 470 150 L 450 200 Z" fill="none" stroke="url(#cyber-blue)" stroke-width="4" stroke-linejoin="round" filter="url(#glow-subtle)"/>
-                    <circle cx="400" cy="125" r="5" fill="#00f0ff" filter="url(#glow-heavy)"/>
-                    <g transform="translate(0, -10)">
-                        <path d="M 390 280 C 310 280 260 310 260 380 C 260 450 310 480 380 480 L 390 480 L 390 435 L 340 435 C 315 435 305 420 305 380 C 305 340 320 325 360 325 L 390 325 Z" fill="none" stroke="url(#cyber-blue)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-subtle)"/>
-                        <path d="M 310 380 H 340 M 325 365 V 395" stroke="#00f0ff" stroke-width="6" stroke-linecap="round" />
-                        <path d="M 410 280 C 490 280 540 310 540 380 C 540 450 490 480 420 480 L 410 480 L 410 410 L 460 410 L 460 440 L 425 440" fill="none" stroke="url(#cyber-green)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-heavy)"/>
-                        <circle cx="490" cy="350" r="6" fill="#39ff14"/>
-                        <circle cx="515" cy="370" r="6" fill="#39ff14"/>
-                        <circle cx="465" cy="370" r="6" fill="#39ff14"/>
-                        <circle cx="490" cy="390" r="6" fill="#39ff14"/>
-                        <path d="M 390 350 L 410 350" stroke="#39ff14" stroke-width="6" stroke-linecap="round"/>
-                        <circle cx="400" cy="350" r="4" fill="#00f0ff"/>
-                    </g>
-                    <g transform="translate(0, 30)">
-                        <path d="M 360 550 Q 400 540 440 550 L 430 600 Q 400 630 370 600 Z" fill="#091733" stroke="url(#cyber-blue)" stroke-width="3" />
-                        <rect x="380" y="565" width="40" height="22" rx="11" fill="#11254a" stroke="#00f0ff" stroke-width="2"/>
-                        <circle cx="392" cy="576" r="3" fill="#39ff14"/>
-                        <circle cx="408" cy="576" r="3" fill="#39ff14"/>
-                        <path d="M 350 560 C 310 540 280 570 320 595 C 290 580 270 610 330 615" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
-                        <path d="M 450 560 C 490 540 520 570 480 595 C 510 580 530 610 470 615" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
-                        <polygon points="260,570 263,576 270,577 265,582 266,589 260,585 254,589 255,582 250,577 257,576" fill="#39ff14" />
-                        <polygon points="540,570 543,576 550,577 545,582 546,589 540,585 534,589 535,582 530,577 537,576" fill="#39ff14" />
-                    </g>
-                    <g id="text-banner">
-                        <path d="M 150 480 L 170 440 L 630 440 L 650 480 L 620 540 L 180 540 Z" fill="#08142c" stroke="url(#cyber-blue)" stroke-width="4" stroke-linejoin="round"/>
-                        <path d="M 150 480 L 120 530 L 180 540" fill="#040a18" stroke="#0044ff" stroke-width="2"/>
-                        <path d="M 650 480 L 680 530 L 620 540" fill="#040a18" stroke="#0044ff" stroke-width="2"/>
-                        <text x="400" y="510" font-family="'Impact', 'Arial Black', sans-serif" font-size="62" font-weight="900" font-style="italic" letter-spacing="2" fill="url(#text-grad)" text-anchor="middle" stroke="#020813" stroke-width="3" filter="drop-shadow(0px 4px 8px rgba(0,0,0,0.8))">GG GAMEHOUSE</text>
-                    </g>
-                    <g id="location-banner" transform="translate(0, 140)">
-                        <path d="M 300 550 L 500 550 L 480 590 L 320 590 Z" fill="#040b1c" stroke="url(#cyber-blue)" stroke-width="2"/>
-                        <circle cx="280" cy="570" r="14" fill="#fff" stroke="#00f0ff" stroke-width="2"/>
-                        <path d="M 266 570 A 14 14 0 0 1 294 570 Z" fill="#ff0000"/>
-                        <circle cx="520" cy="570" r="14" fill="#fff" stroke="#00f0ff" stroke-width="2"/>
-                        <path d="M 506 570 A 14 14 0 0 1 534 570 Z" fill="#ff0000"/>
-                        <text x="400" y="580" font-family="'Arial Black', sans-serif" font-size="28" font-weight="bold" letter-spacing="4" fill="#ffffff" text-anchor="middle">BOGOR</text>
-                    </g>
-                </svg>
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- HEADER UTAMA -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors duration-200">
+            <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Sistem Pencatatan Keuangan & Uang Makan</h1>
+                    <span id="cloudStatus" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 whitespace-nowrap">
+                        🔄 Connecting...
+                    </span>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Sistem Otomatisasi Absensi: Pemain yang terlewat tanggal otomatis dikenakan Guardian Rp 15.000.</p>
             </div>
-            <div class="brand-text-container">
-                <h2 style="margin:0; color:var(--primary); font-size: 1.8em; font-weight: 900; letter-spacing: 0.5px;">GG FARMHOUSE</h2>
-                <div id="syncStatus" class="sync-info">📍 Menghubungkan...</div>
+            <button onclick="toggleDarkMode()" class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-xl border border-gray-300 dark:border-gray-600 cursor-pointer transition shrink-0">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark Mode</span>
+            </button>
+        </div>
+
+        <!-- BACKUP & RESTORE -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors duration-200">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">💾</span>
+                <div>
+                    <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Manajemen Database Cadangan</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Ekspor riwayat transaksi ke file JSON atau pulihkan data langsung ke server Firebase.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btnBackup" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-2 px-3 rounded-lg cursor-pointer transition shadow-sm">
+                    📥 Backup (.json)
+                </button>
+                <label class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium py-2 px-3 rounded-lg cursor-pointer transition shadow-sm">
+                    📤 Restore (.json)
+                    <input type="file" id="restoreFile" accept=".json" class="hidden" />
+                </label>
             </div>
         </div>
-        <div class="header-buttons">
-            <button style="background:#2ecc71; color:white" onclick="openTargetReport()">🎯 Target</button>
-            <button style="background:#16a085; color:white" onclick="openNotesWithPassword()">📝 Notes</button>
-            <button style="background:#1abc9c; color:white" onclick="openPersonalStats()">📊 Report</button>
-            <button style="background:#d35400; color:white" onclick="openCashModal()">💎 Top Up</button>
-            <button style="background:#e67e22; color:white" onclick="document.getElementById('modalCost').style.display='block'">💸 Cost</button>
-            <button style="background:#e74c3c; color:white" onclick="bukaKasbonPrompt()">💰 Kasbon</button>
-            <button style="background:#9b59b6; color:white" onclick="openAccountWithPassword()">🔑 Akun</button>
-            <button style="background:#2c3e50; color:white" onclick="toggleDarkMode()">🌙 Mode</button>
-            <button style="background:#3498db; color:white" onclick="exportData()">💾 Backup</button>
-            <button style="background:#f39c12; color:white" onclick="document.getElementById('fileRestore').click()">📂 Rest</button>
-            <input type="file" id="fileRestore" style="display:none" onchange="importData(this)" accept=".json">
-            <button style="background:#7f8c8d; color:white" onclick="logout()">🔒 Keluar</button>
-        </div>
-    </div>
 
-    <!-- Area Grid Statistik Utama -->
-    <div id="summaryStats" class="stats-grid"></div>
-
-    <div class="input-section">
-        <div class="input-group" style="grid-column: span 2;">
-            <label>NAMA PEKERJA</label>
-            <div style="display: flex; gap: 5px;">
-                <select id="namaOrang"></select>
-                <button onclick="tambahPekerja()" style="background:#3498db; color:white; min-height:42px; padding:0 15px;">+</button>
-                <button onclick="hapusPekerja()" style="background:#e74c3c; color:white; min-height:42px; padding:0 15px;">-</button>
-            </div>
-        </div>
-        <div class="input-group"><label>TANGGAL</label><input type="date" id="tgl"></div>
-        <div class="input-group"><label>CEGEL (Raw)</label><input type="text" id="cegel" onkeyup="formatInputNoRp(this)"></div>
-        <div class="input-group"><label>RATE</label><input type="text" id="rate" onkeyup="formatInput(this)"></div>
-        <div class="input-group"><label>GUARD</label><input type="text" id="guardian" onkeyup="formatInput(this)"></div>
-        <div class="input-group"><label>MAKAN</label><input type="text" id="makan" value="Rp 10.000" onkeyup="formatInput(this)"></div>
-        <div class="input-group"><label>KASBON (Bayar)</label><input type="text" id="kasbon" onkeyup="formatInput(this)"></div>
-        <button style="background:#27ae60; color:white;" onclick="simpanData()">SIMPAN</button>
-    </div>
-
-    <div class="filter-container">
-        <div class="filter-group"><label>CARI NAMA</label><input type="text" id="filterName" placeholder="Ketik nama..." onkeyup="resetLoadLimit()"></div>
-        <div class="filter-group">
-            <label>PILIH BULAN</label>
-            <select id="filterMonth" onchange="resetLoadLimit()">
-                <option value="">-- Semua Bulan --</option>
-                <option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option>
-                <option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option>
-                <option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option>
-                <option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
-            </select>
-        </div>
-        <div class="filter-group"><label>DARI TANGGAL</label><input type="date" id="filterStart" onchange="resetLoadLimit()"></div>
-        <div class="filter-group"><label>SAMPAI TANGGAL</label><input type="date" id="filterEnd" onchange="resetLoadLimit()"></div>
-        <button style="background:#7f8c8d; color:white; margin-left:auto" onclick="resetFilter()">RESET</button>
-    </div>
-
-    <div class="table-container" style="margin-bottom:0; border-radius: 0;">
-        <table>
-            <thead>
-                <tr>
-                    <th rowspan="2" style="width:130px">NAMA</th><th rowspan="2" style="width:110px">TANGGAL</th><th colspan="4" class="bg-earning">PERFORMA PEKERJA</th><th colspan="2" style="background:#2c3e50; color:white">BAGI HASIL</th><th rowspan="2" style="background:#ffff00; color:#000; width:110px">GUARD</th><th rowspan="2" style="width:110px">MAKAN</th><th rowspan="2" style="background:#ff0000; color:#fff; width:110px">KASBON</th><th rowspan="2" style="width:50px">X</th>
-                </tr>
-                <tr>
-                    <th class="bg-earning">CEGEL</th><th class="bg-earning">M</th><th class="bg-earning">RATE</th><th class="bg-earning">TOTAL</th><th style="background:#d35400; color:white">TRANSFER</th><th style="background:#2980b9; color:white">TOMY</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="6" style="text-align:right; padding-right:15px;">TOTAL HALAMAN INI:</td>
-                    <td id="totalTransferPage" class="txt-transfer">Rp 0</td>
-                    <td id="totalTomyPage" class="txt-tomy">Rp 0</td>
-                    <td colspan="4"></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <button id="btnLoadMore" class="load-more-btn" onclick="loadMore()" style="display:none;">MUAT LEBIH BANYAK...</button>
-</div>
-
-<!-- Modals & Pop-up -->
-<div id="modalTargetReport" class="modal"><div class="modal-content" style="max-width: 1000px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:#2ecc71; margin:0; font-size:1.3em;">🗓️ TARGET SETORAN</h2><button onclick="document.getElementById('modalTargetReport').style.display='none'" style="background:#333; color:white;">✕</button></div><div class="filter-container" style="background: #2c3e50; margin-bottom: 15px; border-bottom: none; border-radius: 12px; display: flex; align-items: center; gap: 15px;"><div class="filter-group"><label style="color:white">PILIH BULAN</label><select id="targetMonth" onchange="generateTargetReport()"><option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option></select></div><div class="filter-group"><label style="color:#2ecc71; font-weight: bold;">TARGET HARIAN (IDR)</label><div style="display: flex; gap: 5px; align-items: center;"><input type="text" id="targetNominalInput" onkeyup="formatInput(this)" style="width: 130px; text-align: center; border: 2px solid #2ecc71; color: white; background: rgba(0,0,0,0.3);"><button onclick="saveTargetNominal()" style="background:#2ecc71; color:#fff; padding: 10px 15px; min-height:42px;">SET</button></div></div></div><div id="targetCalendarOutput"></div></div></div>
-<div id="modalPersonalStats" class="modal"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:#1abc9c; margin:0; font-size:1.2em;">📊 REPORT ABSENSI & WEEKLY</h2><button onclick="document.getElementById('modalPersonalStats').style.display='none'" style="background:#333; color:white;">✕</button></div><div class="filter-container" style="margin-bottom:15px; border-radius: 12px; border-bottom: none; background: #2c3e50; display: flex; align-items: center; gap: 15px;"><div class="filter-group"><label style="color:white">PILIH BULAN</label><select id="statMonth" onchange="generateMonthlyReport()"><option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option></select></div><div class="filter-group"><label style="color:#f1c40f; font-weight: bold;">SET SIKLUS (TGL MULAI)</label><div style="display: flex; gap: 5px; align-items: center;"><input type="number" id="startDayConfig" min="1" max="31" disabled style="width: 60px; text-align: center; border: 2px solid #f1c40f; color: white; background: rgba(0,0,0,0.3);"><button id="btnEditStartDay" onclick="toggleEditStartDay()" style="background:#f1c40f; color:#000; padding: 5px 10px; font-size: 0.8em; min-height:42px;">EDIT</button></div></div><div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;"><div style="display:flex; align-items:center; gap:5px; color:white; font-size:0.8em;"><div style="width:12px; height:12px; background:#3498db; border-radius:3px;"></div> ≥100M</div><div style="display:flex; align-items:center; gap:5px; color:white; font-size:0.8em;"><div style="width:12px; height:12px; background:#f1c40f; border-radius:3px;"></div> ≥70M</div><div style="display:flex; align-items:center; gap:5px; color:white; font-size:0.8em;"><div style="width:12px; height:12px; background:#e74c3c; border-radius:3px;"></div> <70M</div></div></div><div id="monthlyReportOutput" class="table-container"></div></div></div>
-<div id="modalCost" class="modal"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:#e67e22; margin:0; font-size:1.3em;">💸 PENGELUARAN COST</h2><button onclick="document.getElementById('modalCost').style.display='none'" style="background:#333; color:white;">✕</button></div><div class="input-section" style="border-top: 6px solid #e67e22;"><div class="input-group"><label>TGL</label><input type="date" id="c_tgl"></div><div class="input-group" style="grid-column: span 2;"><label>JENIS BARANG</label><input type="text" id="c_jenis"></div><div class="input-group"><label>QTY</label><input type="number" id="c_qty" placeholder="0"></div><div class="input-group"><label>SATUAN</label><input type="text" id="c_satuan" placeholder="Pcs/Bks/dll"></div><div class="input-group"><label>HARGA</label><input type="text" id="c_harga" onkeyup="formatInput(this)"></div><div class="input-group" style="grid-column: span 2;"><label>KETERANGAN</label><input type="text" id="c_ket" placeholder="Tambahkan catatan..."></div><button style="background:#e67e22; color:white;" onclick="simpanCost()">SIMPAN</button></div><div class="table-container"><table><thead><tr style="background:#2c3e50; color:#fff"><th>TANGGAL</th><th>KEBUTUHAN / BON OPS</th><th>QTY</th><th>SATUAN</th><th>HARGA</th><th>TOTAL</th><th>KETERANGAN</th><th>X</th></tr></thead><tbody id="costTableBody"></tbody></table></div></div></div>
-<div id="modalKasbon" class="modal"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:#e74c3c; margin:0; font-size:1.3em;">💰 KASBON</h2><button onclick="document.getElementById('modalKasbon').style.display='none'" style="background:#333; color:white;">✕</button></div><div id="vcardOps" class="vcard-scroll" style="margin-bottom:20px"></div><div class="input-section" style="border-top: 6px solid #e74c3c;"><div class="input-group"><label>TGL</label><input type="date" id="k_tgl"></div><div class="input-group"><label>NAMA</label><select id="k_nama"></select></div><div class="input-group"><label>KATEGORI</label><div style="display: flex; gap: 5px;"><select id="k_kategori"></select><button onclick="tambahKategori()" style="background:#3498db; color:white; min-height:42px;">+</button><button onclick="hapusKategori()" style="background:#e74c3c; color:white; min-height:42px;">-</button></div></div><div class="input-group"><label>JENIS</label><select id="k_jenis"><option value="PINJAM">PINJAM</option><option value="BAYAR">BAYAR</option></select></div><div class="input-group"><label>JUMLAH</label><input type="text" id="k_jumlah" onkeyup="formatInput(this)"></div><div class="input-group" style="grid-column: span 2;"><label>KETERANGAN</label><input type="text" id="k_ket"></div><button style="background:#e74c3c; color:white;" onclick="simpanKasbonManual()">SIMPAN</button></div><div class="table-container"><table><thead><tr style="background:#2c3e50; color:#fff"><th>TGL</th><th>NAMA</th><th>KATEGORI</th><th>JENIS</th><th>JUMLAH</th><th>KET</th><th>X</th></tr></thead><tbody id="kasbonTableBody"></tbody></table></div></div></div>
-<div id="accountModal" class="modal"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;"><h2 style="margin:0; color:#9b59b6; font-size:1.3em;">🔑 Akun Game</h2><div><button onclick="tambahAkunBaru()" style="background:#3498db; color:white;">+ CHAR</button><button onclick="document.getElementById('accountModal').style.display='none'" style="background:#e74c3c; color:white; margin-left:10px;">✕</button></div></div><div class="table-container"><table><thead><tr><th>STATUS</th><th>CHAR</th><th>USER ID</th><th>PASS</th><th>PEKERJA</th><th>X</th></tr></thead><tbody id="accountTableBody"></tbody></table></div></div></div>
-<div id="notesModal" class="modal"><div class="modal-content" style="max-width: 700px; min-height: 80vh; background: #fffceb; color: #333; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"><div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px;"><h2 style="margin:0; color:#b8860b; font-family: 'Georgia', serif; font-size:1.3em;">📜 FARM NOTES (B5)</h2><button onclick="document.getElementById('notesModal').style.display='none'" style="background:#e74c3c; color:white;">✕</button></div><textarea id="notesArea" style="width: 100%; height: 60vh; border: none; background: transparent; line-height: 25px; padding: 0 5px; font-family: 'Courier New', Courier, monospace; background-image: linear-gradient(#d1d1d1 1px, transparent 1px); background-size: 100% 25px; outline: none; resize: none; font-size: 1.1em; color: #2c3e50;" placeholder="Ketik catatan penting di sini..." oninput="saveNotes()"></textarea><div style="font-size: 0.8em; color: #888; margin-top: 15px; text-align: right; font-style: italic; border-top: 1px dashed #d4af37; padding-top: 5px;">Awan Sync Active • Penyimpanan Otomatis</div></div></div>
-<div id="modalCash" class="modal"><div class="modal-content"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2 style="color:#d35400; margin:0; font-size:1.3em;">💎 TOP UP CASH</h2><button onclick="document.getElementById('modalCash').style.display='none'" style="background:#333; color:white;">✕</button></div><div class="input-section" style="border-top: 6px solid #d35400;"><div class="input-group"><label>TANGGAL</label><input type="date" id="cash_tgl"></div><div class="input-group"><label>PILIH KARAKTER</label><select id="cash_char"></select></div><div class="input-group"><label>JUMLAH CASH</label><input type="text" id="cash_amount" placeholder="Contoh: 10.000 Cash"></div><div class="input-group"><label>BIAYA (IDR)</label><input type="text" id="cash_price" onkeyup="formatInput(this)"></div><div class="input-group" style="grid-column: span 2;"><label>KETERANGAN</label><input type="text" id="cash_ket" placeholder="Via apa / Untuk apa..."></div><button style="background:#d35400; color:white;" onclick="simpanCash()">SIMPAN TOPUP</button></div><div class="table-container"><table><thead><tr style="background:#2c3e50; color:#fff"><th>TANGGAL</th><th>KARAKTER</th><th>JUMLAH CASH</th><th>BIAYA (IDR)</th><th>KETERANGAN</th><th>X</th></tr></thead><tbody id="cashTableBody"></tbody></table></div></div></div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBphHlavM7eC56wLJ1CUcSi4-yc5YwLcl0",
-        authDomain: "farmhouse-dd33a.firebaseapp.com",
-        databaseURL: "https://farmhouse-dd33a-default-rtdb.asia-southeast1.firebasedatabase.app/",
-        projectId: "farmhouse-dd33a",
-        storageBucket: "farmhouse-dd33a.firebasestorage.app",
-        messagingSenderId: "527376522624",
-        appId: "1:527376522624:web:465177a2721c104551f565"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let localDB = {};
-    let displayLimit = 20;
-
-    db.ref('/').on('value', snap => {
-        localDB = snap.val() || {};
-        updateSelects(); 
-        muatSemua();     
-        if(localDB.configApp && localDB.configApp.startDay) {
-            document.getElementById('startDayConfig').value = localDB.configApp.startDay;
-        }
-    });
-
-    function loadMore() { displayLimit += 20; muatSemua(); }
-    function resetLoadLimit() { displayLimit = 20; muatSemua(); }
-
-    function toggleEditStartDay() {
-        const input = document.getElementById('startDayConfig');
-        const btn = document.getElementById('btnEditStartDay');
-        if (input.disabled) {
-            input.disabled = false; input.style.background = "#fff"; input.style.color = "#000";
-            btn.innerText = "SIMPAN"; btn.style.background = "#27ae60"; btn.style.color = "#fff";
-        } else {
-            let val = parseInt(input.value);
-            if (val < 1 || val > 31 || isNaN(val)) return alert("Tanggal harus 1-31!");
-            db.ref('configApp/startDay').set(val).then(() => {
-                input.disabled = true; input.style.background = "rgba(0,0,0,0.3)"; input.style.color = "white";
-                btn.innerText = "EDIT"; btn.style.background = "#f1c40f"; btn.style.color = "#000";
-                generateMonthlyReport();
-            });
-        }
-    }
-
-    function openPersonalStats() {
-        const now = new Date();
-        document.getElementById('statMonth').value = String(now.getMonth() + 1).padStart(2, '0');
-        const savedDay = (localDB.configApp && localDB.configApp.startDay) ? localDB.configApp.startDay : 1;
-        document.getElementById('startDayConfig').value = savedDay;
-        document.getElementById('modalPersonalStats').style.display = 'block';
-        generateMonthlyReport();
-    }
-
-    function generateMonthlyReport() {
-        const month = document.getElementById('statMonth').value;
-        const startDay = parseInt(document.getElementById('startDayConfig').value) || 1;
-        const year = new Date().getFullYear();
-        const workers = localDB.daftarPekerja ? Object.values(localDB.daftarPekerja).sort() : [];
-        const earnings = localDB.earningData || {};
-        const startDate = new Date(year, parseInt(month) - 1, startDay);
-        let html = `<table style="min-width: 100%;"><thead><tr><th style="width:120px">PEKERJA</th><th>TOTAL CEGEL</th><th>HARI AKTIF</th><th>TRACKING ABSENSI & WEEKLY ACHIEVEMENT</th></tr></thead><tbody>`;
-        workers.forEach(worker => {
-            let totalCegel = 0, daysActive = 0, weeklyData = [0, 0, 0, 0, 0];
-            let calendarHtml = `<div class="cal-grid">`;
-            for (let i = 0; i < 31; i++) {
-                let currentLoopDate = new Date(startDate);
-                currentLoopDate.setDate(startDate.getDate() + i);
-                const d = currentLoopDate.getDate(), m = String(currentLoopDate.getMonth() + 1).padStart(2, '0'), y = currentLoopDate.getFullYear();
-                const dateStr = `${y}-${m}-${String(d).padStart(2, '0')}`;
-                const dayData = Object.values(earnings).find(e => e.namaOrang === worker && e.tgl === dateStr);
-                let indexMinggu = Math.min(Math.floor(i / 7), 4);
-                if (dayData) {
-                    totalCegel += (dayData.cegel || 0); daysActive++; weeklyData[indexMinggu] += (dayData.cegel || 0);
-                    calendarHtml += `<div class="cal-day day-active" title="${dateStr}">${d}</div>`;
-                } else {
-                    calendarHtml += `<div class="cal-day day-missing" title="${dateStr}">${d}</div>`;
-                }
-            }
-            calendarHtml += `</div>`;
-            let weeklyHtml = `<div style="display:flex; gap:10px; margin-top:12px;">`;
-            weeklyData.forEach((valRaw, idx) => {
-                let labelTgl = new Date(startDate); labelTgl.setDate(startDate.getDate() + (idx * 7));
-                let tglDisplay = labelTgl.getDate() + "/" + (labelTgl.getMonth() + 1);
-                let valM = (valRaw / 1000000).toFixed(1);
-                let barColor = valRaw >= 100000000 ? "#3498db" : (valRaw >= 70000000 ? "#f1c40f" : "#e74c3c");
-                weeklyHtml += `<div style="flex:1; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); min-width:85px;">
-                    <div style="font-size: 8px; color: #888;">Mgg ${idx+1} (${tglDisplay})</div>
-                    <div style="font-weight: 900; font-size: 12px; color: ${barColor};">${valM}M</div>
-                    <div style="width: 100%; height: 6px; background: #222; border-radius: 3px; margin-top:5px; overflow:hidden;">
-                        <div style="width: ${Math.min((valRaw/100000000)*100,100)}%; height: 100%; background: ${barColor};"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- FORMS & SETTINGS -->
+            <div class="space-y-6">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-fit transition-colors duration-200">
+                    <div class="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
+                        <h2 id="formTitle" class="text-lg font-semibold text-gray-700 dark:text-gray-200">Input Data Baru</h2>
+                        <button id="cancelEditBtn" class="hidden text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded cursor-pointer">Batal Edit</button>
                     </div>
-                </div>`;
-            });
-            weeklyHtml += `</div>`;
-            html += `<tr><td><b>${worker}</b></td><td style="color:#27ae60"><b>${(totalCegel/1000000).toFixed(1)} M</b></td><td>${daysActive} Hari</td><td style="padding: 10px; background: rgba(0,0,0,0.1);">${calendarHtml} ${weeklyHtml}</td></tr>`;
-        });
-        document.getElementById('monthlyReportOutput').innerHTML = html + `</tbody></table>`;
-    }
+                    
+                    <form id="cegelForm" class="space-y-4">
+                        <input type="hidden" id="editId" value="">
 
-    function openTargetReport() {
-        const now = new Date();
-        document.getElementById('targetMonth').value = String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('modalTargetReport').style.display = 'block';
-        generateTargetReport();
-    }
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Tanggal</label>
+                            <input type="date" id="tanggal" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                        </div>
 
-    function saveTargetNominal() {
-        const val = parseRaw(document.getElementById('targetNominalInput').value);
-        if (val <= 0 || isNaN(val)) return alert("Masukkan nominal target yang valid!");
-        db.ref('configApp/targetHarian').set(val).then(() => {
-            alert("Target harian diperbarui!");
-            generateTargetReport();
-        });
-    }
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Nama</label>
+                            <select id="namaDropdown" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="" disabled selected>-- Pilih Nama --</option>
+                            </select>
+                        </div>
 
-    function generateTargetReport() {
-        const month = document.getElementById('targetMonth').value;
-        const year = new Date().getFullYear();
-        const targetHarian = (localDB.configApp && localDB.configApp.targetHarian) ? localDB.configApp.targetHarian : 271000;
-        document.getElementById('targetNominalInput').value = fmtRp(targetHarian);
-        const earnings = localDB.earningData || {};
-        const firstDay = new Date(year, parseInt(month) - 1, 1).getDay();
-        const daysInMonth = new Date(year, parseInt(month), 0).getDate();
-        let html = `<div class="cal-target-grid">`;
-        ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU'].forEach(d => html += `<div class="day-header">${d}</div>`);
-        for (let i = 0; i < firstDay; i++) { html += `<div class="cal-target-day" style="opacity:0; border:none;"></div>`; }
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${month}-${String(day).padStart(2, '0')}`;
-            let totalTomyHariIni = 0, dataExist = false;
-            Object.values(earnings).forEach(d => {
-                if (d.tgl === dateStr) {
-                    dataExist = true;
-                    let kotor = ((d.cegel || 0) / 1000000) * (d.rate || 0);
-                    let hTom = ((kotor - (d.guardian || 0)) / 2) - (d.makan || 0);
-                    totalTomyHariIni += hTom;
-                }
-            });
-            let selisih = totalTomyHariIni - targetHarian;
-            html += `<div class="cal-target-day">
-                <span class="cal-target-date">${day}</span>
-                <div class="total-info">
-                    ${dataExist ? `<small>Tomy:</small><br><b>${fmtRp(totalTomyHariIni)}</b><br>${selisih < 0 ? `<span class="status-minus">-${fmtRp(Math.abs(selisih))}</span>` : `<span class="status-lunas">✓ Lunas</span>`}` : `<i style="color:#999; font-size:0.7em;">No Data</i>`}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Jumlah Cegel</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
+                                </div>
+                                <input type="text" id="cegelMask" placeholder="0" required class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-mono">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Uang Makan (Otomatis)</label>
+                            <input type="text" id="uangMakanDisplay" value="Rp 0" disabled class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-700 dark:text-gray-300 font-mono">
+                            <input type="hidden" id="uangMakanHidden" value="0">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Guardian</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">Rp</span>
+                                </div>
+                                <input type="text" id="guardianMask" placeholder="0" required class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-mono">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status Pembayaran</label>
+                            <select id="statusBayar" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="Belum Dibayar">❌ Belum Dibayar</option>
+                                <option value="Lunas">✅ Lunas</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Keterangan</label>
+                            <textarea id="keterangan" rows="2" placeholder="Catatan tambahan..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100"></textarea>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 shadow-sm cursor-pointer">
+                            Tambahkan Data
+                        </button>
+                    </form>
                 </div>
-            </div>`;
-        }
-        html += `</div>`;
-        document.getElementById('targetCalendarOutput').innerHTML = html;
-    }
 
-    function updateSelects() {
-        const pks = localDB.daftarPekerja ? Object.values(localDB.daftarPekerja).sort() : [];
-        ['namaOrang', 'k_nama'].forEach(id => {
-            const el = document.getElementById(id); if(!el) return;
-            const cur = el.value; el.innerHTML = '<option value="">-- Pilih --</option>';
-            pks.forEach(p => el.innerHTML += `<option value="${p}">${p}</option>`);
-            el.value = cur;
-        });
-        const cashSel = document.getElementById('cash_char');
-        if(cashSel) {
-            const curC = cashSel.value; cashSel.innerHTML = '<option value="">-- Pilih Karakter --</option>';
-            const akun = localDB.dataAkun || {};
-            Object.values(akun).forEach(a => { if(a.char) cashSel.innerHTML += `<option value="${a.char}">${a.char}</option>`; });
-            cashSel.value = curC;
-        }
-        const kats = localDB.daftarKategori ? Object.values(localDB.daftarKategori).sort() : ["PRIBADI", "OPERASIONAL"];
-        const kSel = document.getElementById('k_kategori');
-        if(kSel){
-            const curK = kSel.value; kSel.innerHTML = '<option value="">-- Pilih --</option>';
-            kats.forEach(v => kSel.innerHTML += `<option value="${v}">${v}</option>`);
-            kSel.value = curK;
-        }
-    }
-
-    function muatSemua() {
-        const fS = document.getElementById('filterStart').value, fE = document.getElementById('filterEnd').value, fN = document.getElementById('filterName').value.toLowerCase(), fM = document.getElementById('filterMonth').value;
-        const body = document.getElementById('tableBody'); body.innerHTML = '';
-        const cBody = document.getElementById('costTableBody'); cBody.innerHTML = '';
-        const kBody = document.getElementById('kasbonTableBody'); kBody.innerHTML = '';
-        const vOps = document.getElementById('vcardOps'); vOps.innerHTML = '';
-        const cashBody = document.getElementById('cashTableBody'); if(cashBody) cashBody.innerHTML = '';
-        const pks = localDB.daftarPekerja ? Object.values(localDB.daftarPekerja).sort() : [];
-        const kats = localDB.daftarKategori ? Object.values(localDB.daftarKategori).sort() : ["PRIBADI", "OPERASIONAL"];
-        
-        let tkot = 0, ttra = 0, ttomCurrent = 0, tkasE = 0, tkasO_Total = 0, tCostCurrent = 0;
-        let tTraHalaman = 0, tTomHalaman = 0;
-
-        const dEarn = localDB.earningData || {};
-        const allEarnData = Object.keys(dEarn).map(k => ({...dEarn[k], id: k})).sort((a,b) => new Date(b.tgl) - new Date(a.tgl));
-        
-        const filteredEarn = allEarnData.filter(i => {
-            if((fM && i.tgl.split('-')[1] !== fM) || (fS && i.tgl < fS) || (fE && i.tgl > fE) || (fN && !i.namaOrang.toLowerCase().includes(fN))) return false;
-            return true;
-        });
-
-        filteredEarn.forEach(i => {
-            let kot = ((i.cegel||0)/1000000) * (i.rate||0), hTra = (((kot - (i.guardian||0)) / 2) + (i.makan || 0)) - (i.kasbon || 0), hTom = ((kot - (i.guardian||0)) / 2) - (i.makan || 0);
-            tkot += kot; ttra += hTra; ttomCurrent += hTom; tkasE += (i.kasbon || 0);
-        });
-
-        const displayedEarn = filteredEarn.slice(0, displayLimit);
-        displayedEarn.forEach(i => {
-            let kot = ((i.cegel||0)/1000000) * (i.rate||0), hTra = (((kot - (i.guardian||0)) / 2) + (i.makan || 0)) - (i.kasbon || 0), hTom = ((kot - (i.guardian||0)) / 2) - (i.makan || 0);
-            tTraHalaman += hTra; tTomHalaman += hTom;
-
-            body.innerHTML += `<tr><td class="td-edit"><select onchange="upEarn('${i.id}','namaOrang',this.value)">${pks.map(p=>`<option value="${p}" ${p===i.namaOrang?'selected':''}>${p}</option>`).join('')}</select></td><td class="td-edit"><input type="date" value="${i.tgl}" onchange="upEarn('${i.id}','tgl',this.value)"></td><td class="td-edit"><input type="text" value="${(i.cegel||0).toLocaleString('id-ID')}" onchange="upEarnNum('${i.id}','cegel',this.value)"></td><td>${((i.cegel||0)/1000000).toFixed(1)}M</td><td class="td-edit"><input type="text" value="${fmtRp(i.rate)}" onchange="upEarnNum('${i.id}','rate',this.value)" onkeyup="formatInput(this)"></td><td>${fmtRp(kot)}</td><td class="txt-transfer">${fmtRp(hTra)}</td><td class="txt-tomy">${fmtRp(hTom)}</td><td class="td-edit"><input type="text" value="${fmtRp(i.guardian)}" onchange="upEarnNum('${i.id}','guardian',this.value)" onkeyup="formatInput(this)"></td><td class="td-edit"><input type="text" value="${fmtRp(i.makan)}" onchange="upEarnNum('${i.id}','makan',this.value)" onkeyup="formatInput(this)"></td><td class="td-edit"><input type="text" value="${fmtRp(i.kasbon)}" onchange="upEarnNum('${i.id}','kasbon',this.value)" onkeyup="formatInput(this)"></td><td><button onclick="hapusDashboard('${i.id}')">✕</button></td></tr>`;
-        });
-
-        document.getElementById('totalTransferPage').innerText = fmtRp(tTraHalaman);
-        document.getElementById('totalTomyPage').innerText = fmtRp(tTomHalaman);
-
-        const btnLoad = document.getElementById('btnLoadMore');
-        if (filteredEarn.length > displayLimit) {
-            btnLoad.style.display = 'block';
-            btnLoad.innerText = `MUAT LEBIH BANYAK... (${filteredEarn.length - displayLimit} Tersisa)`;
-        } else {
-            btnLoad.style.display = 'none';
-        }
-
-        const dKas = localDB.dbKasbon || {}; let rekKas = {};
-        Object.keys(dKas).reverse().forEach(k => {
-            const i = dKas[k], amt = i.jumlah || 0;
-            if(!rekKas[i.nama]) rekKas[i.nama] = 0; rekKas[i.nama] += (i.jenis === 'PINJAM' ? amt : -amt);
-            if ((i.kategori || '').toLowerCase().includes('operasional')) tkasO_Total += (i.jenis === 'PINJAM' ? amt : -amt);
-            kBody.innerHTML += `<tr style="color:${i.jenis==='PINJAM'?'#ff4d4d':'#2ecc71'}"><td class="td-edit"><input type="date" value="${i.tgl}" onchange="upKas('${k}','tgl',this.value)"></td><td class="td-edit"><select onchange="upKas('${k}','nama',this.value)">${pks.map(p=>`<option value="${p}" ${p===i.nama?'selected':''}>${p}</option>`).join('')}</select></td><td class="td-edit"><select onchange="upKas('${k}','kategori',this.value)">${kats.map(kat=>`<option value="${kat}" ${kat===i.kategori?'selected':''}>${kat}</option>`).join('')}</select></td><td>${i.jenis}</td><td class="td-edit"><input type="text" value="${fmtRp(amt)}" onchange="upKasNum('${k}','jumlah',this.value)" onkeyup="formatInput(this)"></td><td class="td-edit"><input type="text" value="${i.ket||''}" onchange="upKas('${k}','ket',this.value)"></td><td><button onclick="hapus('dbKasbon/${k}')">✕</button></td></tr>`;
-        });
-        
-        let pinjamHtml = `<div class="visual-kasbon-container">`;
-        let adaOrangKasbon = false;
-        Object.keys(rekKas).forEach(n => { 
-            if(rekKas[n] !== 0) {
-                vOps.innerHTML += `<div class="vcard-user"><b>👤 ${n}</b><br><span class="amt">${fmtRp(rekKas[n])}</span></div>`;
-                if(rekKas[n] > 0) {
-                    adaOrangKasbon = true;
-                    pinjamHtml += `<div class="visual-kasbon-item">
-                        <span class="visual-kasbon-name">👤 ${n}</span>
-                        <span class="visual-kasbon-amt">${fmtRp(rekKas[n])}</span>
-                    </div>`;
-                }
-            } 
-        });
-        if(!adaOrangKasbon) {
-            pinjamHtml += `<div style="text-align:center; color:#aaa; font-style:italic; font-size:13px; padding: 40px 0;">Tidak ada pinjaman aktif aman! 👍</div>`;
-        }
-        pinjamHtml += `</div>`;
-
-        const dCost = localDB.dbCost || {};
-        Object.keys(dCost).forEach(k => { 
-            const i = dCost[k], tot = (i.qty||0)*(i.harga||0); tCostCurrent += tot; 
-            cBody.innerHTML += `<tr><td class="td-edit"><input type="date" value="${i.tgl||''}" onchange="db.ref('dbCost/${k}/tgl').set(this.value)"></td><td class="td-edit"><input type="text" value="${i.jenis||''}" onchange="db.ref('dbCost/${k}/jenis').set(this.value)" style="text-align:left; padding-left:15px"></td><td class="td-edit"><input type="number" value="${i.qty||0}" onchange="db.ref('dbCost/${k}/qty').set(parseFloat(this.value)||0)"></td><td class="td-edit"><input type="text" value="${i.satuan||''}" onchange="db.ref('dbCost/${k}/satuan').set(this.value)"></td><td class="td-edit"><input type="text" value="${fmtRp(i.harga)}" onchange="db.ref('dbCost/${k}/harga').set(parseRaw(this.value))" onkeyup="formatInput(this)"></td><td style="font-weight:bold">${fmtRp(tot)}</td><td class="td-edit"><input type="text" value="${i.keterangan||''}" onchange="db.ref('dbCost/${k}/keterangan').set(this.value)"></td><td><button onclick="hapus('dbCost/${k}')">✕</button></td></tr>`; 
-        });
-
-        const dCash = localDB.dbCashTopup || {};
-        Object.keys(dCash).reverse().forEach(k => {
-            const i = dCash[k];
-            cashBody.innerHTML += `<tr><td class="td-edit"><input type="date" value="${i.tgl}" onchange="db.ref('dbCashTopup/${k}/tgl').set(this.value)"></td><td><b>${i.char}</b></td><td class="td-edit"><input type="text" value="${i.amount}" onchange="db.ref('dbCashTopup/${k}/amount').set(this.value)"></td><td class="td-edit"><input type="text" value="${fmtRp(i.price)}" onchange="db.ref('dbCashTopup/${k}/price').set(parseRaw(this.value))" onkeyup="formatInput(this)"></td><td class="td-edit"><input type="text" value="${i.ket}" onchange="db.ref('dbCashTopup/${k}/ket').set(this.value)"></td><td><button onclick="hapus('dbCashTopup/${k}')">✕</button></td></tr>`;
-        });
-
-        document.getElementById('summaryStats').innerHTML = `
-            <div class="stats-left-col">
-                <div class="stat-card" style="background:#2c3e50; height: 100%; display: flex; flex-direction: column;">
-                    <span class="label" style="border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:5px; margin-bottom:8px;">⚠️ SALDO KASBON AKTIF</span>
-                    ${pinjamHtml}
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-colors duration-200">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 border-b dark:border-gray-700 pb-1.5">Kelola Daftar Nama Dropdown</h3>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="inputNamaBaru" placeholder="Nama Baru..." class="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                        <button id="btnTambahNama" class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition">Tambah</button>
+                    </div>
+                    <div id="daftarNamaList" class="max-h-36 overflow-y-auto space-y-1 pr-1 text-xs"></div>
                 </div>
             </div>
+
+            <!-- MAIN MONITORING VIEWS -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 overflow-hidden h-fit flex flex-col space-y-6 transition-colors duration-200">
+                
+                <!-- FILTER DATA TABEL -->
+                <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-1.5">
+                        <span>🔍</span> Fitur Pencarian & Filter Data Tabel
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Filter Nama</label>
+                            <select id="filterNamaDropdown" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="">-- Semua Nama --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status Bayar</label>
+                            <select id="filterStatusDropdown" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <option value="Belum Dibayar" selected>❌ Hanya Belum Bayar</option>
+                                <option value="Lunas">✅ Hanya Lunas</option>
+                                <option value="Semua">📋 Tampilkan Semua</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Dari Tanggal</label>
+                            <input type="date" id="filterTanggalMulai" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sampai Tanggal</label>
+                            <div class="flex gap-2">
+                                <input type="date" id="filterTanggalSelesai" class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 flex-1">
+                                <button id="btnResetFilter" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs px-2 rounded-lg cursor-pointer transition" title="Reset Filter">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABEL TRANSAKSI TERKELOMPOK -->
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-700 pb-2">Riwayat Pencatatan (Dikelompokkan Per Nama)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 dark:bg-gray-900/90 text-gray-600 dark:text-gray-400 uppercase text-xs tracking-wider border-b border-gray-300 dark:border-gray-700">
+                                    <th class="py-3 px-4">Tanggal Setor</th>
+                                    <th class="py-3 px-4 text-right">Jumlah Cegel</th>
+                                    <th class="py-3 px-4 text-right">Uang Makan</th>
+                                    <th class="py-3 px-4 text-right">Guardian</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4">Keterangan</th>
+                                    <th class="py-3 px-4 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="text-gray-700 dark:text-gray-300 text-sm">
+                                <tr id="emptyRow"><td colspan="7" class="text-center py-8 text-gray-400 italic">Membuka sambungan ke cloud server...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- GRAND TOTAL DISPLAY CARDS -->
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">💰 Grand Total Berdasarkan Filter Terpilih</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Card Cegel -->
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100/60 dark:from-blue-950/20 dark:to-blue-900/10 p-4 rounded-xl border border-blue-200/60 dark:border-blue-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-blue-600 dark:text-blue-400">Total Setoran Cegel</p>
+                                <p id="totalCegel" class="text-xl font-bold font-mono text-blue-900 dark:text-blue-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-blue-500/10 p-2 rounded-lg text-blue-600">🔷</span>
+                        </div>
+                        <!-- Card Uang Makan -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/60 dark:from-emerald-950/20 dark:to-emerald-900/10 p-4 rounded-xl border border-emerald-200/60 dark:border-emerald-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Total Uang Makan</p>
+                                <p id="totalUangMakan" class="text-xl font-bold font-mono text-emerald-900 dark:text-emerald-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-emerald-500/10 p-2 rounded-lg text-emerald-600">🍖</span>
+                        </div>
+                        <!-- Card Guardian -->
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100/60 dark:from-purple-950/20 dark:to-purple-900/10 p-4 rounded-xl border border-purple-200/60 dark:border-purple-900/30 flex items-center justify-between shadow-sm">
+                            <div>
+                                <p class="text-xs font-medium text-purple-600 dark:text-purple-400">Total Guardian (Denda)</p>
+                                <p id="totalGuardian" class="text-xl font-bold font-mono text-purple-900 dark:text-purple-200 mt-1">Rp 0</p>
+                            </div>
+                            <span class="text-2xl bg-purple-500/10 p-2 rounded-lg text-purple-600">🛡️</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CODE SYSTEM & FIREBASE REALTIME MANAJEMEN TOTAL JADI SATU BUNDLE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaYTmVx6phzoK8HNOSw9y3MAtkGe_pS5Y",
+            authDomain: "perhitungan-basic-farmhouse.firebaseapp.com",
+            databaseURL: "https://perhitungan-basic-farmhouse-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "perhitungan-basic-farmhouse",
+            storageBucket: "perhitungan-basic-farmhouse.firebasestorage.app",
+            messagingSenderId: "539115634591",
+            appId: "1:539115634591:web:481354e31bbb5648c547aa",
+            measurementId: "G-2T9K8KTZ5X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- STATE MANAJEMEN DATA ---
+        let dataList = [];
+        let listNamaMaster = ["Player 1", "Player 2", "Player 3"];
+
+        // --- DOM ELEMENT SELECTION ---
+        document.getElementById('tanggal').valueAsDate = new Date();
+        const dbStatusLabel = document.getElementById('cloudStatus');
+        const form = document.getElementById('cegelForm');
+        const namaDropdown = document.getElementById('namaDropdown');
+        const filterNamaDropdown = document.getElementById('filterNamaDropdown');
+        const filterStatusDropdown = document.getElementById('filterStatusDropdown');
+        const cegelMask = document.getElementById('cegelMask');
+        const guardianMask = document.getElementById('guardianMask');
+        const uangMakanDisplay = document.getElementById('uangMakanDisplay');
+        const uangMakanHidden = document.getElementById('uangMakanHidden');
+        const statusBayar = document.getElementById('statusBayar');
+        const submitBtn = document.getElementById('submitBtn');
+        const formTitle = document.getElementById('formTitle');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const inputNamaBaru = document.getElementById('inputNamaBaru');
+        const daftarNamaList = document.getElementById('daftarNamaList');
+        const filterTanggalMulai = document.getElementById('filterTanggalMulai');
+        const filterTanggalSelesai = document.getElementById('filterTanggalSelesai');
+
+        // --- LISTENER FIREBASE REALTIME ---
+        const rootDbRef = ref(db, "farmhouse_cloud_data");
+        onValue(rootDbRef, (snapshot) => {
+            const serverValue = snapshot.val();
+            if (serverValue) {
+                dataList = serverValue.riwayatPencatatan ? Object.values(serverValue.riwayatPencatatan) : [];
+                listNamaMaster = serverValue.listNamaMaster || ["Player 1", "Player 2", "Player 3"];
+            } else {
+                dataList = [];
+                listNamaMaster = ["Player 1", "Player 2", "Player 3"];
+            }
+
+            dbStatusLabel.textContent = `☁️ Connected (${dataList.length} Data)`;
+            dbStatusLabel.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 whitespace-nowrap";
             
-            <div class="stats-right-col">
-                <div class="stat-card" style="background:#27ae60"><span class="label">Kotor</span><span class="value">${fmtRp(tkot)}</span></div>
-                <div class="stat-card" style="background:#e67e22"><span class="label">Transfer</span><span class="value">${fmtRp(ttra)}</span></div>
-                <div class="stat-card" style="background:#2980b9; grid-column: span 2; text-align:center;"><span class="label">Profit Tomy</span><span class="value" style="font-size:1.6em;">${fmtRp(ttomCurrent)}</span></div>
-                <div class="stat-card" style="background:#8e44ad; grid-column: span 2; text-align:center;"><span class="label">PROFIT BERSIH (NET)</span><span class="value" style="font-size:2.3em;">${fmtRp(ttomCurrent - tCostCurrent - tkasO_Total)}</span></div>
-            </div>
-        `;
-        document.getElementById('syncStatus').innerText = `📍 Terhubung (${filteredEarn.length} Data)`;
-    }
+            renderDropdownNama();
+            JalankanFilterDanRender();
+        }, (error) => {
+            console.error(error);
+            dbStatusLabel.textContent = "❌ Disconnected";
+            dbStatusLabel.className = "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 whitespace-nowrap";
+        });
 
-    function fmtRp(v) { return 'Rp ' + Math.round(v || 0).toLocaleString('id-ID'); }
-    function parseRaw(s) { return parseFloat(s.toString().replace(/Rp/g, '').replace(/\./g, '').replace(/\s/g, '').replace(',', '.')) || 0; }
-    function formatInput(obj) { let v = obj.value.replace(/[^0-9]/g, ''); obj.value = v ? 'Rp ' + parseInt(v).toLocaleString('id-ID') : ''; }
-    function formatInputNoRp(obj) { let v = obj.value.replace(/[^0-9]/g, ''); obj.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
-    
-    function simpanData() { 
-        const n = document.getElementById('namaOrang').value, t = document.getElementById('tgl').value;
-        let valKasbon = parseRaw(document.getElementById('kasbon').value); 
-        if(!n || !t) return alert("Lengkapi data Nama dan Tanggal!"); 
-        if(valKasbon > 0) {
-            let sisaHutang = 0; const dKas = localDB.dbKasbon || {};
-            Object.values(dKas).forEach(i => { if(i.nama === n) { sisaHutang += (i.jenis === 'PINJAM' ? (i.jumlah || 0) : -(i.jumlah || 0)); } });
-            if(sisaHutang <= 0) { alert(`⚠️ TIDAK ADA KASBON!\n${n} tidak memiliki pinjaman. Nominal kasbon diubah menjadi Rp 0.`); valKasbon = 0; } 
-            else if (valKasbon > sisaHutang) { alert(`⚠️ INPUT MELEBIHI HUTANG!\nSisa hutang ${n} adalah ${fmtRp(sisaHutang)}. Nilai simpan disesuaikan.`); valKasbon = sisaHutang; }
+        // --- FORMATTING FUNCTIONS ---
+        function formatMaskingInput(valueString) {
+            const clean = valueString.replace(/\D/g, ""); 
+            if(!clean) return "";
+            return new Intl.NumberFormat('id-ID').format(clean);
         }
-        const newRef = db.ref('earningData').push({ namaOrang: n, tgl: t, cegel: parseRaw(document.getElementById('cegel').value), rate: parseRaw(document.getElementById('rate').value), guardian: parseRaw(document.getElementById('guardian').value), makan: parseRaw(document.getElementById('makan').value), kasbon: valKasbon }); 
-        if(valKasbon > 0) { db.ref('dbKasbon').push({ tgl: t, nama: n, kategori: "PRIBADI", jenis: "BAYAR", jumlah: valKasbon, parentKey: newRef.key }); alert(`✅ Simpan Berhasil. Kasbon terpotong ${fmtRp(valKasbon)}.`); } else { alert(`✅ Simpan Berhasil.`); }
-        ["cegel","rate","guardian","kasbon"].forEach(id => document.getElementById(id).value = ''); 
-    }
+        function unmaskNilai(valueString) {
+            return parseInt(valueString.replace(/\./g, "")) || 0;
+        }
+        function formatRupiahTabel(angka) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
+        }
+        function formatTanggalId(stringTanggal) {
+            if(!stringTanggal) return '-';
+            const opsi = { day: 'numeric', month: 'short', year: 'numeric' };
+            return new Date(stringTanggal + "T00:00:00").toLocaleDateString('id-ID', opsi);
+        }
 
-    function simpanCost() { 
-        const t = document.getElementById('c_tgl').value, j = document.getElementById('c_jenis').value, k = document.getElementById('c_ket').value;
-        if(!t || !j) return alert("Tgl & Jenis Barang harus diisi!");
-        db.ref('dbCost').push({ tgl: t, jenis: j, qty: parseFloat(document.getElementById('c_qty').value)||0, satuan: document.getElementById('c_satuan').value, harga: parseRaw(document.getElementById('c_harga').value), keterangan: k }).then(() => { ["c_jenis","c_qty","c_satuan","c_harga","c_ket"].forEach(id => document.getElementById(id).value = ''); });
-    }
+        // --- MASKING LISTENERS ---
+        cegelMask.addEventListener('input', function() {
+            this.value = formatMaskingInput(this.value);
+            const nilaiAsliCegel = unmaskNilai(this.value);
+            const uangMakan = hitungUangMakan(nilaiAsliCegel);
+            uangMakanHidden.value = uangMakan;
+            uangMakanDisplay.value = formatRupiahTabel(uangMakan);
+        });
+        guardianMask.addEventListener('input', function() {
+            this.value = formatMaskingInput(this.value);
+        });
 
-    function simpanCash() {
-        const t = document.getElementById('cash_tgl').value, c = document.getElementById('cash_char').value, a = document.getElementById('cash_amount').value, p = parseRaw(document.getElementById('cash_price').value);
-        if(!t || !c || !a) return alert("Lengkapi data Top Up!");
-        db.ref('dbCashTopup').push({ tgl: t, char: c, amount: a, price: p, ket: document.getElementById('cash_ket').value }).then(() => { ["cash_char", "cash_amount", "cash_price", "cash_ket"].forEach(id => document.getElementById(id).value = ''); alert("Berhasil mencatat Top Up."); });
-    }
+        function hitungUangMakan(nilaiCegel) {
+            if (nilaiCegel >= 10000000) return 10000; 
+            if (nilaiCegel === 9000000) return 5000;  
+            return 0;     
+        }
 
-    function simpanKasbonManual() { db.ref('dbKasbon').push({ tgl: document.getElementById('k_tgl').value, nama: document.getElementById('k_nama').value, kategori: document.getElementById('k_kategori').value, jenis: document.getElementById('k_jenis').value, jumlah: parseRaw(document.getElementById('k_jumlah').value), ket: document.getElementById('k_ket').value }); }
-    function upEarn(k,f,v) { db.ref(`earningData/${k}/${f}`).set(v); }
-    function upEarnNum(k,f,v) { db.ref(`earningData/${k}/${f}`).set(parseRaw(v)); }
-    function upKas(k,f,v) { db.ref(`dbKasbon/${k}/${f}`).set(v); }
-    function upKasNum(k,f,v) { db.ref(`dbKasbon/${k}/${f}`).set(parseRaw(v)); }
-    function hapus(p) { if(confirm("Hapus?")) db.ref(p).remove(); }
-    function hapusDashboard(k) { if(confirm("Hapus data dashboard ini?")) { const dataTarget = localDB.earningData[k]; if (dataTarget && dataTarget.kasbon > 0) { const dKas = localDB.dbKasbon || {}; Object.keys(dKas).forEach(keyKas => { if (dKas[keyKas].parentKey === k) { db.ref(`dbKasbon/${keyKas}`).remove(); } }); } db.ref(`earningData/${k}`).remove(); } }
-    function openNotesWithPassword() { if(prompt("Pass Notes:") === "tomy1234") { document.getElementById('notesModal').style.display = 'block'; loadNotes(); } }
-    function saveNotes() { const text = document.getElementById('notesArea').value; db.ref('appNotes').set(text); }
-    function loadNotes() { db.ref('appNotes').once('value', (snap) => { if(snap.exists()) { document.getElementById('notesArea').value = snap.val(); } }); }
-    function resetFilter() { document.querySelectorAll('.filter-container input, .filter-container select').forEach(i => i.value = ''); resetLoadLimit(); }
-    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
-    function logout() { localStorage.removeItem("isLoggedIn"); location.reload(); }
-    function checkPin() { if(document.getElementById('pinInput').value === "1234") { localStorage.setItem("isLoggedIn", "true"); document.getElementById('loginOverlay').style.display = 'none'; } }
-    function bukaKasbonPrompt() { if(prompt("Pass Kasbon:") === "tomy1234") document.getElementById('modalKasbon').style.display='block'; }
-    function openAccountWithPassword() { if(prompt("Pass Akun:") === "198619") document.getElementById('accountModal').style.display='block'; muatDataAkun(); }
-    function openCashModal() { if(prompt("Pass TopUp:") === "tomy1234") document.getElementById('modalCash').style.display='block'; }
-    function muatDataAkun() { const tbody = document.getElementById('accountTableBody'); tbody.innerHTML = ''; const akun = localDB.dataAkun || {}, pks = localDB.daftarPekerja ? Object.values(localDB.daftarPekerja).sort() : []; Object.keys(akun).forEach(k => { const d = akun[k], isUsed = d.pekerja && d.pekerja !== ""; tbody.innerHTML += `<tr><td><span class="status-dot ${isUsed ? 'dot-green' : 'dot-red'}"></span> <b>${isUsed ? 'TERPAKAI' : 'TERSEDIA'}</b></td><td class="td-edit"><input type="text" value="${d.char || ''}" onchange="db.ref('dataAkun/${k}/char').set(this.value)"></td><td class="td-edit"><input type="text" value="${d.user || ''}" onchange="db.ref('dataAkun/${k}/user').set(this.value)"></td><td class="td-edit"><input type="text" value="${d.pass || ''}" onchange="db.ref('dataAkun/${k}/pass').set(this.value)"></td><td class="td-edit"><select onchange="db.ref('dataAkun/${k}/pekerja').set(this.value || '')"><option value=\"\">-- Kosong --</option>${pks.map(p => `<option value="${p}" ${p === d.pekerja ? 'selected' : ''}>${p}</option>`).join('')}</select></td><td><button onclick=\"hapus('dataAkun/${k}')\">✕</button></td></tr>`; }); }
-    function tambahAkunBaru() { db.ref('dataAkun').push({ char: 'Baru', user: '', pass: '', pekerja: '' }); }
-    function tambahPekerja() { const n = prompt("Nama:"); if(n) db.ref('daftarPekerja').push(n); }
-    function hapusPekerja() { const v = document.getElementById('namaOrang').value; if(v && confirm(`Hapus ${v}?`)) db.ref('daftarPekerja').once('value', s => { s.forEach(c => { if(c.val() === v) c.ref.remove(); }); }); }
-    function exportData() { db.ref('/').once('value').then(snap => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(snap.val(),null,2)],{type:'application/json'})); a.download='Backup_Farmhouse.json'; a.click(); }); }
-    function importData(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { if(confirm("Restore?")) db.ref('/').set(JSON.parse(e.target.result)); }; r.readAsText(f); }
-    window.onload = () => { if(localStorage.getItem("isLoggedIn") === "true") document.getElementById('loginOverlay').style.display = 'none'; const t = new Date().toISOString().split('T')[0]; document.getElementById('tgl').value = t; document.getElementById('k_tgl').value = t; document.getElementById('c_tgl').value = t; document.getElementById('cash_tgl').value = t; };
-</script>
+        // --- RENDER DROPDOWN NAMA & AKSI TAMBAH/HAPUS DROPDOWN ---
+        function renderDropdownNama() {
+            const selectedValForm = namaDropdown.value;
+            const selectedValFilter = filterNamaDropdown.value;
+
+            namaDropdown.innerHTML = '<option value="" disabled selected>-- Pilih Nama --</option>';
+            filterNamaDropdown.innerHTML = '<option value="">-- Semua Nama --</option>';
+            daftarNamaList.innerHTML = '';
+
+            [...listNamaMaster].sort().forEach(nama => {
+                const optionForm = document.createElement('option');
+                optionForm.value = nama; optionForm.textContent = nama;
+                namaDropdown.appendChild(optionForm);
+
+                const optionFilter = document.createElement('option');
+                optionFilter.value = nama; optionFilter.textContent = nama;
+                filterNamaDropdown.appendChild(optionFilter);
+
+                const rowNama = document.createElement('div');
+                rowNama.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-2 border border-gray-200 dark:border-gray-600 rounded mb-1";
+                rowNama.innerHTML = `
+                    <span class="font-medium text-gray-700 dark:text-gray-300">${nama}</span>
+                    <button type="button" data-nama="${nama}" class="btn-del-nama text-red-500 hover:text-red-700 font-semibold px-1 cursor-pointer">✕</button>
+                `;
+                daftarNamaList.appendChild(rowNama);
+            });
+
+            if(listNamaMaster.includes(selectedValForm)) namaDropdown.value = selectedValForm;
+            if(listNamaMaster.includes(selectedValFilter)) filterNamaDropdown.value = selectedValFilter;
+
+            // Bind event listener untuk tombol hapus nama opsional
+            document.querySelectorAll('.btn-del-nama').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const nama = this.getAttribute('data-nama');
+                    if(confirm(`Hapus "${nama}" dari daftar dropdown pilihan?`)) {
+                        const updatedList = listNamaMaster.filter(n => n !== nama);
+                        set(ref(db, `farmhouse_cloud_data/listNamaMaster`), updatedList);
+                    }
+                });
+            });
+        }
+
+        document.getElementById('btnTambahNama').addEventListener('click', function() {
+            const namaBaru = inputNamaBaru.value.trim();
+            if(!namaBaru) return alert("Masukkan nama yang valid!");
+            if(listNamaMaster.some(n => n.toLowerCase() === namaBaru.toLowerCase())) return alert("Nama ini sudah terdaftar!");
+            
+            const updatedList = [...listNamaMaster, namaBaru];
+            inputNamaBaru.value = "";
+            set(ref(db, `farmhouse_cloud_data/listNamaMaster`), updatedList);
+        });
+
+        // --- FILTER & ENGINE UTAMA RENDER TABEL ---
+        function JalankanFilterDanRender() {
+            let semuaTanggalUnik = [...new Set(dataList.map(item => item.tanggal))];
+            const hariIniStr = new Date().toISOString().slice(0, 10);
+            if (!semuaTanggalUnik.includes(hariIniStr)) semuaTanggalUnik.push(hariIniStr);
+            
+            let dataGabunganLengkap = [...dataList];
+
+            semuaTanggalUnik.forEach(tgl => {
+                listNamaMaster.forEach(nama => {
+                    const sudahAda = dataList.some(item => item.tanggal === tgl && item.nama === nama);
+                    if (!sudahAda) {
+                        dataGabunganLengkap.push({
+                            id: `AUTO-${tgl}|${nama}`, 
+                            tanggal: tgl, nama: nama, cegel: 0, uangMakan: 0, guardian: 15000,
+                            statusBayar: 'Belum Dibayar',
+                            keterangan: 'Otomatis: Tidak Setor (Guardian Rp 15.000)'
+                        });
+                    }
+                });
+            });
+
+            const filterNama = filterNamaDropdown.value;
+            const filterStatus = filterStatusDropdown.value;
+            const tglMulai = filterTanggalMulai.value;
+            const tglSelesai = filterTanggalSelesai.value;
+
+            const dataTerfilter = dataGabunganLengkap.filter(item => {
+                const cocokNama = filterNama === "" || item.nama === filterNama;
+                let cocokStatus = true;
+                if (filterStatus !== "Semua") cocokStatus = (item.statusBayar || 'Belum Dibayar') === filterStatus;
+                let cocokTanggal = true;
+                if (tglMulai && item.tanggal < tglMulai) cocokTanggal = false;
+                if (tglSelesai && item.tanggal > tglSelesai) cocokTanggal = false;
+                return cocokNama && cocokStatus && cocokTanggal;
+            });
+
+            renderGroupedTable(dataTerfilter);
+            calculateTotal(dataTerfilter);
+        }
+
+        // Event filter listener
+        [filterNamaDropdown, filterStatusDropdown, filterTanggalMulai, filterTanggalSelesai].forEach(el => {
+            el.addEventListener('change', JalankanFilterDanRender);
+        });
+
+        document.getElementById('btnResetFilter').addEventListener('click', function() {
+            filterNamaDropdown.value = "";
+            filterStatusDropdown.value = "Belum Dibayar";
+            filterTanggalMulai.value = "";
+            filterTanggalSelesai.value = "";
+            JalankanFilterDanRender();
+        });
+
+        // --- SKEMA WARNA HEADER TABEL KELOMPOK ---
+        function dapatkanWarnaBerdasarkanIndeksNama(namaStr) {
+            const koleksiWarnaLengkap = [
+                { light: "from-blue-600 to-indigo-600", dark: "dark:from-blue-950 dark:to-indigo-950" },
+                { light: "from-emerald-600 to-teal-600", dark: "dark:from-emerald-950 dark:to-teal-950" },
+                { light: "from-purple-600 to-fuchsia-600", dark: "dark:from-purple-950 dark:to-fuchsia-950" },
+                { light: "from-amber-600 to-orange-600", dark: "dark:from-amber-950 dark:to-orange-950" },
+                { light: "from-rose-600 to-pink-600", dark: "dark:from-rose-950 dark:to-pink-950" }
+            ];
+            const daftarNamaUrut = [...listNamaMaster].sort();
+            const indeksPosisi = daftarNamaUrut.indexOf(namaStr);
+            const indeksFinal = indeksPosisi !== -1 ? (indeksPosisi % koleksiWarnaLengkap.length) : 0;
+            return koleksiWarnaLengkap[indeksFinal];
+        }
+
+        function renderGroupedTable(arrayData = []) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (arrayData.length === 0) {
+                tbody.innerHTML = `<tr id="emptyRow"><td colspan="7" class="text-center py-8 text-gray-400 italic">Tidak ada data ditemukan.</td></tr>`;
+                return;
+            }
+
+            const petaKelompok = {};
+            arrayData.forEach(item => {
+                if (!petaKelompok[item.nama]) petaKelompok[item.nama] = [];
+                petaKelompok[item.nama].push(item);
+            });
+
+            Object.keys(petaKelompok).sort().forEach(namaPemain => {
+                const subRiwayat = petaKelompok[namaPemain].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)); 
+                let subCegel = 0, subMakan = 0, subGuardian = 0;
+
+                subRiwayat.forEach(s => {
+                    subCegel += s.cegel; subMakan += s.uangMakan; subGuardian += s.guardian;
+                });
+
+                const warnaSkema = dapatkanWarnaBerdasarkanIndeksNama(namaPemain);
+                const trHeader = document.createElement('tr');
+                trHeader.className = `bg-gradient-to-r ${warnaSkema.light} ${warnaSkema.dark} text-white font-bold border-t border-black/10 shadow-sm`;
+                trHeader.innerHTML = `
+                    <td colspan="7" class="py-3 px-4 text-base">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="flex items-center gap-2"><span>👤</span> ${namaPemain}</span>
+                            <span class="bg-white/20 text-white text-xs font-normal px-2.5 py-1 rounded-md border border-white/10">${subRiwayat.length} Baris</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(trHeader);
+
+                subRiwayat.forEach(item => {
+                    const trData = document.createElement('tr');
+                    const isAuto = typeof item.id === 'string' && item.id.startsWith('AUTO-');
+                    trData.className = isAuto 
+                        ? "bg-amber-500/[0.02] hover:bg-amber-500/[0.06] transition duration-150 border-b border-gray-100 dark:border-gray-700/50 italic text-gray-500"
+                        : "hover:bg-blue-50/40 dark:hover:bg-gray-700/30 transition duration-150 border-b border-gray-100 dark:border-gray-700/50";
+                    
+                    const statusStr = item.statusBayar || 'Belum Dibayar';
+                    const badgeStyle = statusStr === 'Lunas' 
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900' 
+                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200 dark:border-rose-900';
+
+                    trData.innerHTML = `
+                        <td class="py-2.5 px-6 font-medium dark:text-gray-300">${formatTanggalId(item.tanggal)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-blue-600 dark:text-blue-400">${formatRupiahTabel(item.cegel)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-green-600 dark:text-green-400">${formatRupiahTabel(item.uangMakan)}</td>
+                        <td class="py-2.5 px-4 text-right font-mono text-purple-600 dark:text-purple-400">${formatRupiahTabel(item.guardian)}</td>
+                        <td class="py-2.5 px-4 text-center">
+                            <button type="button" class="btn-toggle-status px-2.5 py-0.5 text-xs font-semibold rounded-full cursor-pointer transition ${badgeStyle}" data-id="${item.id}">
+                                ${statusStr === 'Lunas' ? '✅ Lunas' : '❌ Belum'}
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-4 text-xs max-w-[150px] truncate" title="${item.keterangan}">${item.keterangan}</td>
+                        <td class="py-2.5 px-4 text-center space-x-1 whitespace-nowrap">
+                            ${isAuto 
+                                ? `<button type="button" data-tgl="${item.tanggal}" data-nama="${item.nama}" data-id="${item.id}" class="btn-input-susulan text-amber-600 dark:text-amber-400 hover:bg-amber-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Input Setor</button>`
+                                : `<button type="button" data-id="${item.id}" class="btn-edit-data text-blue-600 dark:text-blue-400 hover:bg-blue-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Edit</button>
+                                   <button type="button" data-id="${item.id}" class="btn-hapus-data text-red-600 dark:text-red-400 hover:bg-red-100 px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition">Hapus</button>`
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(trData);
+                });
+
+                const trSubTotal = document.createElement('tr');
+                trSubTotal.className = "bg-slate-50 dark:bg-slate-900/60 border-b-2 border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400";
+                trSubTotal.innerHTML = `
+                    <td class="py-4 px-6 text-left text-gray-400 font-extrabold text-xs uppercase">SUB-TOTAL:</td>
+                    <td class="py-4 px-4 text-right"><span class="bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 px-3 py-1.5 rounded-lg font-mono border border-blue-200/50 shadow-sm">${formatRupiahTabel(subCegel)}</span></td>
+                    <td class="py-4 px-4 text-right"><span class="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 px-3 py-1.5 rounded-lg font-mono border border-emerald-200/50 shadow-sm">${formatRupiahTabel(subMakan)}</span></td>
+                    <td class="py-4 px-4 text-right"><span class="bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 px-3 py-1.5 rounded-lg font-mono border border-purple-200/50 shadow-sm">${formatRupiahTabel(subGuardian)}</span></td>
+                    <td colspan="3"></td>
+                `;
+                tbody.appendChild(trSubTotal);
+            });
+
+            // --- BINDING EVENT CLICKS DALAM LINGKUP SCRIPT MODULE (MENYEMBUHKAN TOMBOL KLIK) ---
+            document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    
+                    // JIKA DATA OTOMATIS DIKLIK TOMBOL STATUSNYA
+                    if (id.startsWith('AUTO-')) {
+                        const parts = id.split('|');
+                        const tgl = parts[0].replace('AUTO-', '');
+                        const nama = parts[1];
+                        
+                        const dataBaruSuntik = {
+                            id: Date.now(),
+                            tanggal: tgl, nama: nama, cegel: 0, uangMakan: 0, guardian: 15000,
+                            statusBayar: 'Lunas',
+                            keterangan: 'Otomatis: Tidak Setor (Guardian Rp 15.000)'
+                        };
+                        set(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${dataBaruSuntik.id}`), dataBaruSuntik);
+                    } else {
+                        // JIKA DATA ASLI/MANUAL DIKLIK
+                        const target = dataList.find(item => item.id == id);
+                        if(target) {
+                            const statusBaru = (target.statusBayar === 'Lunas') ? 'Belum Dibayar' : 'Lunas';
+                            update(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`), { statusBayar: statusBaru });
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-edit-data').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const target = dataList.find(item => item.id == id);
+                    if(!target) return;
+
+                    document.getElementById('editId').value = target.id;
+                    document.getElementById('tanggal').value = target.tanggal;
+                    namaDropdown.value = target.nama;
+                    cegelMask.value = formatMaskingInput(target.cegel.toString());
+                    guardianMask.value = formatMaskingInput(target.guardian.toString());
+                    uangMakanHidden.value = target.uangMakan;
+                    uangMakanDisplay.value = formatRupiahTabel(target.uangMakan);
+                    statusBayar.value = target.statusBayar || 'Belum Dibayar';
+                    document.getElementById('keterangan').value = target.keterangan;
+
+                    formTitle.textContent = "Edit Data Terpilih";
+                    submitBtn.textContent = "Simpan Perubahan";
+                    submitBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg cursor-pointer transition";
+                    cancelEditBtn.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.btn-input-susulan').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    resetFormState();
+                    document.getElementById('editId').value = this.getAttribute('data-id');
+                    document.getElementById('tanggal').value = this.getAttribute('data-tgl');
+                    namaDropdown.value = this.getAttribute('data-nama');
+                    
+                    formTitle.textContent = "Input Setoran Susulan";
+                    submitBtn.textContent = "Simpan Setoran";
+                    cancelEditBtn.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.btn-hapus-data').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if(confirm("Yakin ingin menghapus baris data pencatatan ini?")) {
+                        remove(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${id}`));
+                        if(document.getElementById('editId').value == id) resetFormState();
+                    }
+                });
+            });
+        }
+
+        function calculateTotal(arrayData = []) {
+            let tc = 0, tum = 0, tg = 0;
+            arrayData.forEach(item => {
+                tc += item.cegel; tum += item.uangMakan; tg += item.guardian;
+            });
+            document.getElementById('totalCegel').textContent = formatRupiahTabel(tc);
+            document.getElementById('totalUangMakan').textContent = formatRupiahTabel(tum);
+            document.getElementById('totalGuardian').textContent = formatRupiahTabel(tg);
+        }
+
+        // --- MANAJEMEN FORM INPUT ACTION ---
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            const nilaiAsliCegel = unmaskNilai(cegelMask.value);
+
+            const isAuto = typeof editId === 'string' && editId.startsWith('AUTO-');
+            const finalId = (editId && !isAuto) ? parseInt(editId) : Date.now();
+
+            const dataObj = {
+                id: finalId,
+                tanggal: document.getElementById('tanggal').value,
+                nama: namaDropdown.value,
+                cegel: nilaiAsliCegel,
+                uangMakan: hitungUangMakan(nilaiAsliCegel),
+                guardian: unmaskNilai(guardianMask.value),
+                statusBayar: statusBayar.value || 'Belum Dibayar',
+                keterangan: document.getElementById('keterangan').value || '-'
+            };
+
+            set(ref(db, `farmhouse_cloud_data/riwayatPencatatan/${finalId}`), dataObj)
+                .then(() => resetFormState())
+                .catch(err => alert(err.message));
+        });
+
+        function resetFormState() {
+            form.reset();
+            document.getElementById('editId').value = "";
+            document.getElementById('tanggal').valueAsDate = new Date();
+            cegelMask.value = ""; guardianMask.value = "";
+            uangMakanDisplay.value = "Rp 0"; uangMakanHidden.value = "0";
+            statusBayar.value = "Belum Dibayar";
+            formTitle.textContent = "Input Data Baru";
+            submitBtn.textContent = "Tambahkan Data";
+            submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg cursor-pointer transition";
+            cancelEditBtn.classList.add('hidden');
+        }
+        cancelEditBtn.addEventListener('click', resetFormState);
+
+        // --- BACKUP & RESTORE UTILITY INSIDE MODULE ---
+        document.getElementById('btnBackup').addEventListener('click', function() {
+            if (dataList.length === 0) return alert("Tidak ada transaksi untuk dicadangkan.");
+            const payload = {
+                info: "MSSTech Keuangan & Uang Makan Backup",
+                created_at: new Date().toISOString(),
+                listNamaMaster: listNamaMaster,
+                riwayatPencatatan: dataList
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`);
+            dl.click();
+        });
+
+        document.getElementById('restoreFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!confirm("⚠️ PERINGATAN:\nRestore akan menghapus seluruh data yang aktif di Cloud server saat ini.\n\nYakin?")) {
+                event.target.value = ''; return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    let arr = Array.isArray(parsed.riwayatPencatatan) ? parsed.riwayatPencatatan : Object.values(parsed.riwayatPencatatan || {});
+                    set(ref(db, `farmhouse_cloud_data`), {
+                        info: parsed.info || "MSSTech Backup",
+                        created_at: new Date().toISOString(),
+                        listNamaMaster: parsed.listNamaMaster || ["Player 1", "Player 2", "Player 3"],
+                        riwayatPencatatan: arr.reduce((acc, item) => { acc[item.id] = item; return acc; }, {})
+                    }).then(() => alert("✅ Cloud server berhasil dipulihkan total!"));
+                } catch (err) { alert("Format file rusak atau salah."); }
+                finally { event.target.value = ''; }
+            };
+            reader.readAsText(file);
+        });
+    </script>
+
+    <!-- THEME MANAGEMENT (Sederhana diluar Module agar instan load) -->
+    <script>
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeIcon.textContent = "🌙"; themeText.textContent = "Dark Mode";
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                themeIcon.textContent = "☀️"; themeText.textContent = "Light Mode";
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const html = document.documentElement;
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+                document.getElementById('themeIcon').textContent = "☀️";
+                document.getElementById('themeText').textContent = "Light Mode";
+            }
+        })();
+    </script>
 </body>
 </html>
